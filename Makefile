@@ -1,51 +1,73 @@
-NAME = minishell
+# **************************************************************************** #
+#                                                                              #
+#                                                         :::      ::::::::    #
+#    Makefile                                           :+:      :+:    :+:    #
+#                                                     +:+ +:+         +:+      #
+#    By: fpedroso <fpedroso@student.42sp.org.br>    +#+  +:+       +#+         #
+#        maria-ol <maria-ol@student.42sp.org.br>  +#+#+#+#+#+   +#+            #
+#    Created: 2026/05/30 13:23:40 by fpedroso          #+#    #+#              #
+#    Updated: 2026/05/30 13:23:40 by fpedroso         ###   ########.fr        #
+#                                                                              #
+# **************************************************************************** #
 
-CC = cc
-CFLAGS = -Wall -Wextra -Werror -g
 
-# Libft
-LIBFT_DIR = libraries/libft
-LIBFT = $(LIBFT_DIR)/libft.a
+NAME = cub3D
 
-INCLUDES = -I include -I $(LIBFT_DIR)
+CC := gcc
+CFLAGS := -Wall -Wextra -Werror -g -Iinclude -Ilibft
+# Asan: -fsanitize=address,undefined
 
-# On macOS, Homebrew's GNU readline must be used explicitly because the
-# system ships libedit instead, which lacks rl_replace_line and other symbols.
-# On Linux (42 school), the default -lreadline links to full GNU readline.
-UNAME := $(shell uname)
-ifeq ($(UNAME), Darwin)
-    READLINE_PREFIX := $(shell brew --prefix readline 2>/dev/null)
-    INCLUDES += -I$(READLINE_PREFIX)/include
-    LIBS = -L$(READLINE_PREFIX)/lib -lreadline -L$(LIBFT_DIR) -lft
-else
-    LIBS = -lreadline -L$(LIBFT_DIR) -lft
-endif
+# Directories
+SRC_DIR := src
+OBJ_DIR := obj
+LIBFT_DIR := libft
 
-# ============================================================================ #
-#                                DIRECTORIES                                   #
-# ============================================================================ #
+LIBFT := $(LIBFT_DIR)/libft.a
 
-SRC_DIR = src
-OBJ_DIR = obj
+FILES := main.c		\
+					\
+					\
+					\
+					\
 
-PARSING_DIR = $(SRC_DIR)/parsing
-EXEC_DIR = $(SRC_DIR)/execution
-BUILTIN_DIR = $(SRC_DIR)/builtins
-ENV_DIR = $(SRC_DIR)/env
-UTILS_DIR = $(SRC_DIR)/utils
-SIGNALS_DIR = $(SRC_DIR)/signals
 
-# ============================================================================ #
-#                              SOURCE FILES                                    #
-# ============================================================================ #
+SRC := $(addprefix $(SRC_DIR)/,$(FILES))
+OBJ := $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(SRC))
 
-# Main
-MAIN_SRC = main.c
 
-# Parsing (Pessoa A)
-PARSING_SRC = lexer.c \
-              expander.c \
-			  expander_utils.c \
-              parser.c \
-              parser_utils.c \
-              parser_free.c \
+all: $(NAME)
+
+
+$(NAME): $(OBJ) $(LIBFT)
+	$(CC) $(CFLAGS) $(OBJ) $(LIBFT) -o $(NAME)
+	@echo "cub3D compiled"
+
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
+	@mkdir -p $(dir $@)
+	$(CC) $(CFLAGS) -c $< -o $@
+	@echo "Compiled: $<"
+
+$(LIBFT):
+	@$(MAKE) -C $(LIBFT_DIR)
+
+
+clean:
+	rm -rf $(OBJ_DIR)
+	@$(MAKE) -C $(LIBFT_DIR) clean
+
+fclean: clean
+	rm -f $(NAME)
+	@$(MAKE) -C $(LIBFT_DIR) fclean
+
+re: fclean all
+
+val: all
+	valgrind	--leak-check=full		\
+				--show-leak-kinds=all	\
+				--trace-children=yes	\
+				--track-origins=yes		\
+				--track-fds=yes			\
+				--keep-debuginfo=yes	\
+				--tool=memcheck ./cub3D
+
+.PHONY: all clean fclean re
