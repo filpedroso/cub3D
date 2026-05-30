@@ -24,11 +24,11 @@ LIBFT_DIR := libft
 
 LIBFT := $(LIBFT_DIR)/libft.a
 
-FILES := main.c		\
-					\
-					\
-					\
-					\
+FILES :=	main.c				\
+			parser/parser.c		\
+			utils/utils.c		\
+			render/render.c		\
+								\
 
 
 SRC := $(addprefix $(SRC_DIR)/,$(FILES))
