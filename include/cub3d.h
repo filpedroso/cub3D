@@ -18,6 +18,7 @@
 # include <unistd.h>
 # include <string.h>
 # include <math.h>
+# include "MLX42/include/MLX42/MLX42.h"
 
 /* ========================================================================== */
 /*                                  DEFINES                                   */
@@ -27,6 +28,8 @@
 # define ERROR -1
 # define TRUE 1
 # define FALSE 0
+# define WIDTH 10
+# define HEIGHT 10
 
 /* ========================================================================== */
 /*                                   ENUMS                                    */
@@ -52,6 +55,19 @@ typedef enum e_error
 /*                                 STRUCTURES                                 */
 /* ========================================================================== */
 
+
+typedef struct s_map
+{
+	int	grid[WIDTH][HEIGHT];
+} t_map;
+
+
+typedef struct	s_game
+{
+	mlx_t		*mlx;
+	mlx_image_t	*image;
+	t_map	*map;
+} t_game;
 
 
 /* ========================================================================== */
