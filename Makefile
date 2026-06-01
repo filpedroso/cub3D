@@ -4,9 +4,9 @@
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
 #    By: fpedroso <fpedroso@student.42sp.org.br>    +#+  +:+       +#+         #
-#        maria-ol <maria-ol@student.42sp.org.br>  +#+#+#+#+#+   +#+            #
+#                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/30 13:23:40 by fpedroso          #+#    #+#              #
-#    Updated: 2026/05/30 13:23:40 by fpedroso         ###   ########.fr        #
+#    Updated: 2026/06/01 14:30:39 by fpedroso         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -24,11 +24,8 @@ LIBFT_DIR := libft
 
 LIBFT := $(LIBFT_DIR)/libft.a
 
-FILES :=	main.c				\
-			parser/parser.c		\
-			utils/utils.c		\
-			render/render.c		\
-								\
+FILES :=	main.c
+
 
 
 SRC := $(addprefix $(SRC_DIR)/,$(FILES))
