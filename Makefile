@@ -14,15 +14,18 @@
 NAME = cub3D
 
 CC := gcc
-CFLAGS := -Wall -Wextra -Werror -g -Iinclude -Ilibft
+CFLAGS := -Wall -Wextra -Werror -g -Iinclude -Ilibft -IMLX42/include
 # Asan: -fsanitize=address,undefined
 
 # Directories
 SRC_DIR := src
 OBJ_DIR := obj
 LIBFT_DIR := libft
+MLX_DIR := MLX42/build
 
 LIBFT := $(LIBFT_DIR)/libft.a
+MLX := $(MLX_DIR)/libmlx42.a
+GLFW := MLX42/build/_deps/glfw-build/src/libglfw3.a
 
 FILES :=	main.c
 
@@ -36,7 +39,7 @@ all: $(NAME)
 
 
 $(NAME): $(OBJ) $(LIBFT)
-	$(CC) $(CFLAGS) $(OBJ) $(LIBFT) -o $(NAME)
+	$(CC) $(CFLAGS) $(OBJ) $(LIBFT) $(MLX) $(GLFW) -framework Cocoa -framework OpenGL -framework IOKit -o $(NAME)
 	@echo "cub3D compiled"
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
