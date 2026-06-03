@@ -19,6 +19,7 @@
 # include <string.h>
 # include <math.h>
 # include "../MLX42/include/MLX42/MLX42.h"
+# include "../libft/libft.h"
 
 /* ========================================================================== */
 /*                                  DEFINES                                   */
@@ -28,10 +29,18 @@
 # define ERROR -1
 # define TRUE 1
 # define FALSE 0
-# define WIDTH 10
-# define HEIGHT 10
-# define SCR_W 800
-# define SCR_H 600
+# define WIDTH 600
+# define HEIGHT 400
+# define SCR_W 500
+# define SCR_H 500
+# define SQUARE_SZ 40
+# define MAP_W 10
+# define MAP_H 10
+# define MAP_PX_H (SQUARE_SZ * MAP_H)
+# define MAP_PX_W (SQUARE_SZ * MAP_W)
+# define BLUE 0x0000FFFF
+# define BLACK 0xFFFAFAFA
+# define CIRCLE_R 10
 
 /* ========================================================================== */
 /*                                   ENUMS                                    */
