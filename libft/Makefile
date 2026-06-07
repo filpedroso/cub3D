@@ -15,7 +15,7 @@ NC			= \033[0m # No Color
 # Compilation Variables
 NAME = libft.a
 CC = cc
-CFLAGS = -Wextra -Wall -Werror
+CFLAGS = -Wextra -Wall -Werror -D BUFFER_SIZE=42
 SRC = $(MANDATORY)
 OBJ = $(SRC:.c=.o)
 
@@ -50,6 +50,7 @@ MANDATORY = \
 	ft_lstiter.c \
 	ft_lstmap.c \
 	ft_realloc.c \
+	ft_memdel.c ft_append_line.c get_next_line.c \
 
 
 ###	Rules	#################################

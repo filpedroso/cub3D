@@ -74,4 +74,13 @@ t_list				*ft_lstmap(t_list *lst, void *(*f)(void *),
 						void (*del)(void *));
 void				*ft_realloc(void *ptr, size_t old_size, size_t new_size);
 
+/* Mona's libft */
+# ifndef BUFFER_SIZE
+#  define BUFFER_SIZE 42
+# endif
+
+char	*get_next_line(int fd);
+void	ft_memdel(void **address_ptr);
+char	**ft_append_line(char **arr, char *line, int count);
+
 #endif
