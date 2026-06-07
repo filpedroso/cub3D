@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   cub3d.h                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: fpedroso <fpedroso@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: mona <mona@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/21 00:00:00 by mona              #+#    #+#             */
-/*   Updated: 2026/06/01 14:07:44 by fpedroso         ###   ########.fr       */
+/*   Updated: 2026/06/07 19:57:50 by mona             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,7 @@
 # include <unistd.h>
 # include <string.h>
 # include <math.h>
+# include <fcntl.h>
 # include "../MLX42/include/MLX42/MLX42.h"
 # include "../libft/libft.h"
 
@@ -49,17 +50,17 @@
 // Error types
 typedef enum e_error
 {
-	ERR_NONE,
-	ERR_SYNTAX,
-	ERR_CMD_NOT_FOUND,
+	ERR_NONE = 0,
+	ERR_ARGS,
 	ERR_NO_FILE,
-	ERR_PERMISSION,
+	ERR_NO_CUB,
 	ERR_MALLOC,
-	ERR_TOO_MANY_ARGS,
-	ERR_NUM_REQUIRED,
-	ERR_NOT_VALID_ID,
-	ERR_HOME_NOT_SET,
-	ERR_OLDPWD_NOT_SET
+	ERR_MAP_CHARS,
+	ERR_MAP_OPEN,
+	ERR_MAP_PLAYER,
+	ERR_MISSING_TEX,
+	ERR_INVALID_COLOR,
+	ERR_INVALID_ID
 }	t_error;
 
 /* ========================================================================== */
@@ -67,27 +68,61 @@ typedef enum e_error
 /* ========================================================================== */
 
 
-typedef struct s_map
+// typedef struct s_map
+// {
+// 	int	grid[WIDTH][HEIGHT];
+// } t_map;
+
+typedef struct	s_config
 {
-	int	grid[WIDTH][HEIGHT];
-} t_map;
+	char	*tex_north;
+	char	*tex_south;
+	char	*tex_west;
+	char	*tex_east;
+	int		floor[3];
+	int		ceil[3];
+}	t_config;
+
+typedef struct	s_map
+{
+	char	**grid;
+	int		rows;
+	int		cols;
+}	t_map;
+
+typedef struct	s_player
+{
+	double	x;
+	double	y;
+	char	dir;
+}	t_player;
 
 
 typedef struct	s_game
 {
 	mlx_t		*mlx;
 	mlx_image_t	*image;
-	t_map	*map;
-} t_game;
+	t_map		map;
+	t_config	config;
+	t_player	player;
+}	t_game;
 
 
 /* ========================================================================== */
 /*                                  PARSING                                   */
 /* ========================================================================== */
+int		has_cub_extension(const char *filename);
+int		has_png_extension(const char *filename);
+char	*trim_newline(char *line);
+int		parse_map_grid(int fd, t_map *map, char *first_map_line, t_player *player);
+int		parse_meta(int fd, t_config *config, char **first_map_line);
+int		parse_cub(const char *path, t_game *game);
+int		find_player(char **map, t_player *player);
 
 /* ========================================================================== */
 /*                                RAYCASTING                                  */
 /* ========================================================================== */
+
 
 
 /* ========================================================================== */
@@ -95,5 +130,11 @@ typedef struct	s_game
 /* ========================================================================== */
 
 // Error handling
+int	handle_error(t_error error);
+
+//free
+void	free_map(char **map);
+void	free_visited(char **visited);
+void	free_visited_partial(char **visited, int until);
 
 #endif
