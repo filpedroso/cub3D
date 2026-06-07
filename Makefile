@@ -13,7 +13,7 @@
 NAME = cub3D
 
 CC := gcc
-CFLAGS := -Wall -Wextra -Werror -g -Iinclude -Ilibft -IMLX42/include
+CFLAGS := -Wall -Wextra -Werror -g -fsanitize=address,undefined -Iinclude -Ilibft -IMLX42/include
 # Asan: -fsanitize=address,undefined
 
 # Colors

@@ -30,13 +30,14 @@
 # define ERROR -1
 # define TRUE 1
 # define FALSE 0
-# define WIDTH 600
-# define HEIGHT 400
+
 # define SCR_W 500
 # define SCR_H 500
+
 # define SQUARE_SZ 40
 # define MAP_W 10
 # define MAP_H 10
+
 # define MAP_PX_H (SQUARE_SZ * MAP_H)
 # define MAP_PX_W (SQUARE_SZ * MAP_W)
 # define BLUE 0x0000FFFF
@@ -67,6 +68,7 @@ typedef enum e_error
 /*                                 STRUCTURES                                 */
 /* ========================================================================== */
 
+<<<<<<< HEAD
 // typedef struct s_map
 // {
 // 	int	grid[WIDTH][HEIGHT];
@@ -95,15 +97,27 @@ typedef struct s_player
 	double	y;
 	char	dir;
 }	t_player;
+=======
+typedef struct	s_point
+{
+	uint32_t	x;
+	uint32_t	y;
+} t_point;
+>>>>>>> f114e7f (feat(render): starts with player's position)
 
 typedef struct s_game
 {
 	mlx_t		*mlx;
 	mlx_image_t	*image;
+<<<<<<< HEAD
 	t_map		map;
 	t_config	config;
 	t_player	player;
 }	t_game;
+=======
+} t_game;
+
+>>>>>>> f114e7f (feat(render): starts with player's position)
 
 /* ========================================================================== */
 /*                                  PARSING                                   */

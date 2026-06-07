@@ -20,32 +20,34 @@ void	draw_minimap(t_game *game, int gridmap[MAP_W][MAP_H]);
 int32_t	ft_pixel(int32_t r, int32_t g, int32_t b, int32_t a);
 bool	is_in_cube(int gridmap[MAP_W][MAP_H], int i, int j);
 bool	is_in_grid(int i, int j);
-void draw_circle(void* param);
+void	draw_circle(void* param);
+bool	belongs_in_circle(uint32_t y, uint32_t x);
+
+static int	gridmap[MAP_H][MAP_W] =
+{
+	{1,1,1,1,1,1,1,1,1,1},
+	{1,0,0,0,0,0,0,0,0,1},
+	{1,2,0,1,0,0,1,1,0,1},
+	{1,0,0,0,0,1,1,1,0,1},
+	{1,0,0,0,0,0,0,0,0,1},
+	{1,0,1,0,0,0,0,0,0,1},
+	{1,0,0,0,0,0,1,1,0,1},
+	{1,0,0,0,0,0,1,1,0,1},
+	{1,0,0,0,0,0,0,0,0,1},
+	{1,1,1,1,1,1,1,1,1,1}
+};
 
 int	main(void)
 {
 	t_game	game;
-	memset(&game, 0, sizeof(game));
- 	int    gridmap[MAP_H][MAP_W] =
-    {
-        {1,1,1,1,1,1,1,1,1,1},
-        {1,0,0,0,0,0,0,0,0,1},
-        {1,0,0,1,0,0,1,1,0,1},
-        {1,0,0,0,0,1,1,1,0,1},
-        {1,0,0,0,0,0,0,0,0,1},
-        {1,0,1,0,0,0,0,0,0,1},
-        {1,0,0,0,0,0,1,1,0,1},
-        {1,0,0,0,0,0,1,1,0,1},
-        {1,0,0,0,0,0,0,0,0,1},
-        {1,1,1,1,1,1,1,1,1,1}
-    };
+
+	ft_memset(&game, 0, sizeof(game));
 	run_minimap_mode(&game, gridmap);
 }
 
 void	run_minimap_mode(t_game *game, int gridmap[MAP_W][MAP_H])
 {
 	config_mlx(game);
-
 	draw_minimap(game, gridmap);
 	mlx_loop_hook(game->mlx, draw_circle, game);
 	mlx_loop_hook(game->mlx, ft_hook, game);
@@ -53,24 +55,35 @@ void	run_minimap_mode(t_game *game, int gridmap[MAP_W][MAP_H])
 	mlx_terminate(game->mlx);
 }
 
-void	draw_minimap(t_game *game, int gridmap[MAP_W][MAP_H])
+mlx_image_t	*create_minimap_image(t_game *game)
 {
-	uint32_t	i;
-	uint32_t	j;
+	mlx_image_t	*image;
 
-	mlx_image_t *image = mlx_new_image(game->mlx, MAP_PX_H, MAP_PX_W);
+	image = mlx_new_image(game->mlx, MAP_PX_W, MAP_PX_H);
 	if (!image)
 	{
 		mlx_close_window(game->mlx);
 		puts(mlx_strerror(mlx_errno));
-		return;
+		return (NULL);
 	}
 	if (mlx_image_to_window(game->mlx, image, 0, 0) == -1)
 	{
 		mlx_close_window(game->mlx);
 		puts(mlx_strerror(mlx_errno));
-		return;
+		return (NULL);
 	}
+	return (image);
+}
+
+void	draw_minimap(t_game *game, int gridmap[MAP_W][MAP_H])
+{
+	mlx_image_t	*image;
+	uint32_t	i;
+	uint32_t	j;
+
+	image = create_minimap_image(game);
+	if (!image)
+		return ;
 	i = 0;
 	while(i < image->height)
 	{
@@ -114,28 +127,70 @@ bool	is_in_cube(int gridmap[MAP_W][MAP_H], int i, int j)
 	return (gridmap[inset_y][inset_x] == 1);
 }
 
+t_point	get_starting_pos()
+{
+	t_point		ret;
+	uint32_t	i;
+	uint32_t	j;
+
+	i = 0;
+	while (i < MAP_H)
+	{
+		j = 0;
+		while (j < MAP_W)
+		{
+			if (gridmap[i][j] == 2)
+			{
+				ret.y = i * SQUARE_SZ;
+				ret.x = j * SQUARE_SZ;
+				return (ret);
+			}
+			j++;
+		}
+		i++;
+	}
+	return ((t_point){0, 0});
+}
+
 void draw_circle(void* param)
 {
-	t_game		*game = (t_game *)param;
+	t_game		*game;
 	uint32_t	color;
-
-	for (uint32_t y = 0; y < CIRCLE_R * 2; ++y)
+	t_point		offset;
+	uint32_t	y;
+	uint32_t	x;
+	
+	game = (t_game *)param;
+	offset = get_starting_pos();
+	y = 0;
+	while (y < CIRCLE_R * 2)
 	{
-		for (uint32_t x = 0; x < CIRCLE_R * 2; ++x)
+		x = 0;
+		while (x < CIRCLE_R * 2)
 		{
-			if ((x - CIRCLE_R) * (x - CIRCLE_R) + (y - CIRCLE_R) * (y - CIRCLE_R) <= CIRCLE_R * CIRCLE_R)
+			if (belongs_in_circle(y, x))
 			{
-				color = ft_pixel(
-					rand() % 0xFF,			// R
-					0xFF,					// G
-					0xFF,					// B
-					0xA0 			// A
-				);
-				mlx_put_pixel(game->image, x, y, color);
+				color = ft_pixel(rand() % 0xFF, 0xFF, 0xFF, 0xA0);
+				mlx_put_pixel(game->image, x + offset.x , y + offset.y, color);
 			}
+			x++;
 		}
+		y++;
 	}
 }
+
+
+
+bool	belongs_in_circle(uint32_t y, uint32_t x)
+{
+	uint32_t	c_x;
+	uint32_t	c_y;
+
+	c_x = x - CIRCLE_R;
+	c_y = y - CIRCLE_R;
+	return ((c_x) * (c_x) + (c_y) * (c_y) <= CIRCLE_R * CIRCLE_R);
+}
+
 void draw_square(void* param)
 {
 	t_game		*game = (t_game *)param;
@@ -164,7 +219,7 @@ void	config_mlx(t_game *game)
 		puts(mlx_strerror(mlx_errno));
 		return;
 	}
-	game->image = mlx_new_image(game->mlx, SCR_W, SCR_W);
+	game->image = mlx_new_image(game->mlx, SCR_W, SCR_H);
 	if (!game->image)
 	{
 		mlx_close_window(game->mlx);
@@ -178,7 +233,6 @@ void	config_mlx(t_game *game)
 		return;
 	}
 }
-
 
 void ft_hook(void* param)
 {
