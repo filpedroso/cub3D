@@ -1,15 +1,14 @@
 # Executables
-cub3d
+cub3D
 *.out
 a.out
 
 # Object files
 *.o
-*.a
 obj/
 
-# Libft (se for link simbólico ou submódulo, ajustar conforme necessário)
-# libft/
+# Libraries
+*.a
 
 # MacOS
 .DS_Store
@@ -18,68 +17,20 @@ obj/
 .vscode/
 .idea/
 
-# Test files
-test
-tester/
-temp_*
-.heredoc_*
+# Debug
+*.dSYM/
+*.d
 
 # Logs
 *.log
 valgrind-out.txt
 
-# Prerequisites
-*.d
+# Test files
+tester/
+temp_*
 
-# Linker output
-*.ilk
-*.map
-*.exp
-
-# Precompiled Headers
-*.gch
-*.pch
-
-# Libraries
-*.lib
-*.a
-*.la
-*.lo
-
-# Shared objects (inc. Windows DLLs)
-*.dll
-*.so
-*.so.*
-*.dylib
-
-# Executables
-*.exe
-*.out
-*.app
-*.i*86
-*.x86_64
-*.hex
-
-# Debug files
-*.dSYM/
-*.su
-*.idb
-*.pdb
-
-# Kernel Module Compile Results
-*.mod*
-*.cmd
-.tmp_versions/
-modules.order
-Module.symvers
-Mkfile.old
-dkms.conf
-
-# debug information files
-*.dwo
-
-# MLX42 build artifacts
+# MLX42 build
 MLX42/build/
 
-# cub3D executable
-cub3D
+# 42 subject
+*.pdf
