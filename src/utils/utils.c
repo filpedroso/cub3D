@@ -6,7 +6,7 @@
 /*   By: mona <mona@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/28 21:23:39 by mona              #+#    #+#             */
-/*   Updated: 2026/06/07 20:19:32 by mona             ###   ########.fr       */
+/*   Updated: 2026/06/07 22:54:57 by mona             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,7 @@
 				ERR_INVALID_COLOR ← cor RGB inválida
 				ERR_INVALID_ID    ← identificador desconhecido no .cub
  *
- * @return Always returns ERROR (-1) to indicate error status for main() exit code.
+ * @return Returns ERROR (-1) to indicate error status for main() exit code.
  * @note ERR_NONE (index 0) is NULL and should never be passed to this function.
  * @see t_error enum definition in cub3d.h
  * @see main() in cub3d.c for usage examples

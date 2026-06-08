@@ -6,7 +6,7 @@
 /*   By: mona <mona@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/06/07 14:48:50 by mona              #+#    #+#             */
-/*   Updated: 2026/06/07 20:13:55 by mona             ###   ########.fr       */
+/*   Updated: 2026/06/07 22:54:28 by mona             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,7 +38,7 @@ int	parse_cub(const char *path, t_game *game)
 	int			fd;
 	int			err;
 	char		*first_line;
-	
+
 	if (!has_cub_extension(path))
 		return (handle_error(ERR_NO_CUB));
 	fd = open(path, O_RDONLY);

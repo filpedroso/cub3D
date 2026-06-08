@@ -6,7 +6,7 @@
 /*   By: mona <mona@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/28 21:23:33 by mona              #+#    #+#             */
-/*   Updated: 2026/06/07 20:14:36 by mona             ###   ########.fr       */
+/*   Updated: 2026/06/07 22:55:14 by mona             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -119,7 +119,7 @@ int	parse_map_grid(int fd, t_map *map, char *first_map_line, t_player *player)
 {
 	char	*line;
 	int		count;
-	
+
 	line = first_map_line;
 	count = 0;
 	while (line)

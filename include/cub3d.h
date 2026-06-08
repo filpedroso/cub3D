@@ -6,7 +6,7 @@
 /*   By: mona <mona@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/21 00:00:00 by mona              #+#    #+#             */
-/*   Updated: 2026/06/07 19:57:50 by mona             ###   ########.fr       */
+/*   Updated: 2026/06/07 23:01:16 by mona             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,13 +67,12 @@ typedef enum e_error
 /*                                 STRUCTURES                                 */
 /* ========================================================================== */
 
-
 // typedef struct s_map
 // {
 // 	int	grid[WIDTH][HEIGHT];
 // } t_map;
 
-typedef struct	s_config
+typedef struct s_config
 {
 	char	*tex_north;
 	char	*tex_south;
@@ -83,22 +82,21 @@ typedef struct	s_config
 	int		ceil[3];
 }	t_config;
 
-typedef struct	s_map
+typedef struct s_map
 {
 	char	**grid;
 	int		rows;
 	int		cols;
 }	t_map;
 
-typedef struct	s_player
+typedef struct s_player
 {
 	double	x;
 	double	y;
 	char	dir;
 }	t_player;
 
-
-typedef struct	s_game
+typedef struct s_game
 {
 	mlx_t		*mlx;
 	mlx_image_t	*image;
@@ -106,7 +104,6 @@ typedef struct	s_game
 	t_config	config;
 	t_player	player;
 }	t_game;
-
 
 /* ========================================================================== */
 /*                                  PARSING                                   */
@@ -124,13 +121,12 @@ int		find_player(char **map, t_player *player);
 /* ========================================================================== */
 
 
-
 /* ========================================================================== */
 /*                                  UTILS                                     */
 /* ========================================================================== */
 
 // Error handling
-int	handle_error(t_error error);
+int		handle_error(t_error error);
 
 //free
 void	free_map(char **map);

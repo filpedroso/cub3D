@@ -6,7 +6,7 @@
 /*   By: mona <mona@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/06/07 14:55:45 by mona              #+#    #+#             */
-/*   Updated: 2026/06/07 22:26:36 by mona             ###   ########.fr       */
+/*   Updated: 2026/06/07 23:02:25 by mona             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,12 +50,12 @@ static int	is_map_line(const char *line)
  *
  * @return ERR_NONE on success, or an error code on failure:
  * @retval ERR_MISSING_TEX If the path is empty or not a .png file.
- * @retval ERR_MALLOC      If ft_strdup fails to allocate memory.
+ * @retval ERR_MALLOC If ft_strdup fails to allocate memory.
  */
 static int	parse_texture(const char *line, char **dest)
 {
 	const char	*path;
-	char	*tmp;
+	char		*tmp;
 
 	path = line + 2;
 	while (*path == ' ')
@@ -99,7 +99,7 @@ static int	parse_color(const char *line, int dest[3])
 }
 
 /**
- * @brief Identifies the metadata identifier and dispatches to the correct parser.
+ * @brief Identifies the metadata id and dispatches to the correct parser.
  *
  * Compares the beginning of the line against all valid identifiers
  * (NO, SO, WE, EA, F, C) and calls the appropriate parsing function.
@@ -139,9 +139,9 @@ static int	dispatch_meta_line(const char *line, t_config *config)
  * map line is detected via is_map_line, preserving that line in
  * first_map_line for parse_map_grid to consume.
  *
- * @param fd              Open file descriptor positioned at the start of the file.
- * @param config          Pointer to t_config to be populated with metadata.
- * @param first_map_line  Address of a char* to store the first map line.
+ * @param fd Open file descriptor positioned at the start of the file.
+ * @param config Pointer to t_config to be populated with metadata.
+ * @param first_map_line Address of a char* to store the first map line.
  *
  * @return ERR_NONE on success, or an error code on failure:
  * @retval ERR_MISSING_TEX   If any of the four textures (NO/SO/WE/EA) is absent.

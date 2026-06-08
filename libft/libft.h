@@ -79,8 +79,8 @@ void				*ft_realloc(void *ptr, size_t old_size, size_t new_size);
 #  define BUFFER_SIZE 42
 # endif
 
-char	*get_next_line(int fd);
-void	ft_memdel(void **address_ptr);
-char	**ft_append_line(char **arr, char *line, int count);
+char				*get_next_line(int fd);
+void				ft_memdel(void **address_ptr);
+char				**ft_append_line(char **arr, char *line, int count);
 
 #endif
