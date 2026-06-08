@@ -77,3 +77,9 @@ dkms.conf
 
 # debug information files
 *.dwo
+
+# MLX42 build artifacts
+MLX42/build/
+
+# cub3D executable
+cub3D
