@@ -6,7 +6,7 @@
 /*   By: mona <mona@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/06/07 14:55:45 by mona              #+#    #+#             */
-/*   Updated: 2026/06/07 20:17:30 by mona             ###   ########.fr       */
+/*   Updated: 2026/06/07 22:26:36 by mona             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,9 +29,11 @@ static int	is_map_line(const char *line)
 {
 	if (!line || line[0] == '\0')
 		return (FALSE);
-	if (line[0] == '1' || line[0] == '0' || line[0] == 'N'  || line[0] == 'S'
-		|| line[0] == 'E' || line[0] == 'W' || line[0] == ' ')
+	if (line[0] == '1' || line[0] == '0' || line[0] == ' ')
 		return (TRUE);
+	if (line[0] == 'N' || line[0] == 'S'
+		|| line[0] == 'E' || line[0] == 'W')
+		return (line[1] == ' ' || line[1] == '\0' || line[1] == '\n');
 	return (FALSE);
 }
 
@@ -153,14 +155,19 @@ int	parse_meta(int fd, t_config *config, char **first_map_line)
 	int		err;
 
 	line = get_next_line(fd);
-	while (line && !is_map_line(line))
+	while (line)
 	{
 		trim_newline(line);
-		err = dispatch_meta_line(line, config);
-		if (err != ERR_NONE)
+		if (is_map_line(line))
+			break ;
+		if (line[0] != '\0')
 		{
-			free(line);
-			return (err);
+			err = dispatch_meta_line(line, config);
+			if (err != ERR_NONE)
+			{
+				free(line);
+				return (err);
+			}
 		}
 		free(line);
 		line = get_next_line(fd);
