@@ -48,7 +48,6 @@
 /*                                   ENUMS                                    */
 /* ========================================================================== */
 
-// Error types
 typedef enum e_error
 {
 	ERR_NONE = 0,
@@ -67,12 +66,6 @@ typedef enum e_error
 /* ========================================================================== */
 /*                                 STRUCTURES                                 */
 /* ========================================================================== */
-
-<<<<<<< HEAD
-// typedef struct s_map
-// {
-// 	int	grid[WIDTH][HEIGHT];
-// } t_map;
 
 typedef struct s_config
 {
@@ -97,27 +90,21 @@ typedef struct s_player
 	double	y;
 	char	dir;
 }	t_player;
-=======
-typedef struct	s_point
+
+typedef struct s_point
 {
 	uint32_t	x;
 	uint32_t	y;
-} t_point;
->>>>>>> f114e7f (feat(render): starts with player's position)
+}	t_point;
 
 typedef struct s_game
 {
 	mlx_t		*mlx;
 	mlx_image_t	*image;
-<<<<<<< HEAD
 	t_map		map;
 	t_config	config;
 	t_player	player;
 }	t_game;
-=======
-} t_game;
-
->>>>>>> f114e7f (feat(render): starts with player's position)
 
 /* ========================================================================== */
 /*                                  PARSING                                   */
@@ -139,10 +126,7 @@ int		find_player(char **map, t_player *player);
 /*                                  UTILS                                     */
 /* ========================================================================== */
 
-// Error handling
 int		handle_error(t_error error);
-
-//free
 void	free_map(char **map);
 void	free_visited(char **visited);
 void	free_visited_partial(char **visited, int until);
