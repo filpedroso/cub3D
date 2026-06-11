@@ -1,0 +1,13 @@
+/* NO - North wall texture
+   SO - South wall texture
+   EA - East wall texture
+   WE - West wall texture
+   
+   0  - Floor
+   1  - Walls
+   N  - Player start facing North
+   S  - Player start facing South
+   E  - Player start facing East
+   W  - Player start facing West
+   D  - Doors (optional)
+*/
