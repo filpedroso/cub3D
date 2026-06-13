@@ -49,6 +49,7 @@
 # define CIRCLE_R 10
 # define CIRCLE_DIAM (CIRCLE_R * 2)
 
+# define MVMT_INCR 5
 
 /* ========================================================================== */
 /*                                TEMPORARIO                                  */

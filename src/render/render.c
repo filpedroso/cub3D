@@ -13,6 +13,7 @@
 #include "cub3d.h"
 
 static void	set_player_position(mlx_instance_t *player_instance);
+void	esc_kills(void *param);
 
 void	run_minimap_mode(t_game *game)
 {
@@ -23,9 +24,19 @@ void	run_minimap_mode(t_game *game)
 	}
 	draw_minimap(game);
 	set_player_position(game->player_img->instances);
+	mlx_loop_hook(game->mlx, esc_kills, game);
 	mlx_loop_hook(game->mlx, draw_player, game);
 	mlx_loop(game->mlx);
 	mlx_terminate(game->mlx);
+}
+
+void	esc_kills(void *param)
+{
+	t_game	*game;
+
+	game = (t_game *)param;
+	if (mlx_is_key_down(game->mlx, MLX_KEY_ESCAPE))
+		mlx_close_window(game->mlx);
 }
 
 static void	set_player_position(mlx_instance_t *player_instance)

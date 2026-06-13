@@ -15,7 +15,7 @@
 static void		update_position(t_game *game);
 static void		redraw(t_game *game);
 static bool		belongs_in_circle(uint32_t y, uint32_t x);
-// static bool		is_collision(mlx_image_t* img1, int inst1_id, mlx_image_t* img2, int inst2_id);
+static bool		will_collide(mlx_image_t *map_img, mlx_image_t *player_img, int32_t x_incr, int32_t y_incr);
 
 void	draw_player(void* param)
 {
@@ -28,21 +28,26 @@ void	draw_player(void* param)
 
 static void	update_position(t_game *game)
 {
-	if (mlx_is_key_down(game->mlx, MLX_KEY_ESCAPE))
-		mlx_close_window(game->mlx);
 	if (mlx_is_key_down(game->mlx, MLX_KEY_UP))
-		game->player_img->instances[0].y -= 5;
-	if (mlx_is_key_down(game->mlx, MLX_KEY_DOWN))
-		game->player_img->instances[0].y += 5;
-	if (mlx_is_key_down(game->mlx, MLX_KEY_LEFT))
-		game->player_img->instances[0].x -= 5;
-	if (mlx_is_key_down(game->mlx, MLX_KEY_RIGHT))
-		game->player_img->instances[0].x += 5;
-	/* if (is_collision(game))
 	{
-		game->player_img->instances[0].x -= 5;
-		game->player_img->instances[0].y -= 5;
-	} */
+		if (!will_collide(game->map_img, game->player_img, 0, -MVMT_INCR))
+			game->player_img->instances[0].y -= MVMT_INCR;
+	}
+	if (mlx_is_key_down(game->mlx, MLX_KEY_DOWN))
+	{
+		if (!will_collide(game->map_img, game->player_img, 0, MVMT_INCR))
+			game->player_img->instances[0].y += MVMT_INCR;
+	}
+	if (mlx_is_key_down(game->mlx, MLX_KEY_LEFT))
+	{
+		if (!will_collide(game->map_img, game->player_img, -MVMT_INCR, 0))
+			game->player_img->instances[0].x -= MVMT_INCR;
+	}
+	if (mlx_is_key_down(game->mlx, MLX_KEY_RIGHT))
+	{
+		if (!will_collide(game->map_img, game->player_img, MVMT_INCR, 0))
+			game->player_img->instances[0].x += MVMT_INCR;
+	}
 }
 
 static void	redraw(t_game *game)
@@ -78,30 +83,31 @@ static bool	belongs_in_circle(uint32_t y, uint32_t x)
 
 
 
-
-
-/* static bool is_collision(mlx_image_t* img1, int inst1_id, mlx_image_t* img2, int inst2_id)
+static bool	will_collide(mlx_image_t *map_img, mlx_image_t *player_img, int32_t x_incr, int32_t y_incr)
 {
-    // Image 1 bounds
-    int x1 = img1->instances[inst1_id].x;
-    int y1 = img1->instances[inst1_id].y;
-    int w1 = img1->width;
-    int h1 = img1->height;
+	uint32_t	map_pixel;
+	uint32_t	px;
+	uint32_t	py;
+	uint32_t	i;
+	uint32_t	j;
 
-    // Image 2 bounds
-    int x2 = img2->instances[inst2_id].x;
-    int y2 = img2->instances[inst2_id].y;
-    int w2 = img2->width;
-    int h2 = img2->height;
-
-    // AABB Collision logic
-    if (x1 < x2 + w2 &&   // img1 left edge is left of img2 right edge
-        x1 + w1 > x2 &&   // img1 right edge is right of img2 left edge
-        y1 < y2 + h2 &&   // img1 top edge is above img2 bottom edge
-        y1 + h1 > y2)     // img1 bottom edge is below img2 top edge
-    {
-        return true; // Images are colliding
-    }
-    
-    return false; // No collision
-} */
+	px = player_img->instances[0].x + x_incr;
+	py = player_img->instances[0].y + y_incr;
+	i = 0;
+	while (i < player_img->height)
+	{
+		j = 0;
+		while (j < player_img->width)
+		{
+			if ((px + j) < map_img->width && (py + i) < map_img->height)
+			{
+				map_pixel = ((uint32_t *)map_img->pixels)[(py + i) * map_img->width + (px + j)];
+				if (map_pixel == 4294901760)
+					return (true);
+			}
+			j++;
+		}
+		i++;
+	}
+	return (false);
+}
