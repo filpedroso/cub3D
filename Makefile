@@ -34,14 +34,12 @@ LIBFT := $(LIBFT_DIR)/libft.a
 MLX   := $(MLX_DIR)/libmlx42.a
 GLFW  := MLX42/build/_deps/glfw-build/src/libglfw3.a
 
-FILES :=	main.c				 \
-			parser/parser.c		 \
-			parser/parser_meta.c \
-			parser/parser_map.c	 \
-			parser/file_utils.c	 \
-			parser/free_utils.c	 \
-			utils/utils.c		 \
-			render/render.c		 \
+FILES :=	main.c					\
+			render/render.c			\
+			render/draw_minimap.c	\
+			render/draw_player.c	\
+			render/mlx_config.c		\
+			utils/utils.c
 
 SRC := $(addprefix $(SRC_DIR)/,$(FILES))
 OBJ := $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(SRC))
@@ -91,7 +89,7 @@ banner:
 	@printf '%b\n' "$(LILAC_TRUE)  ╚═════╝ ╚═════╝ ╚═════╝ ╚═════╝ ╚═════╝ $(RESET)"
 	@echo ""
 	@echo "$(LILAC_TRUE)        🎮 First-Person Raycaster in C$(RESET)"
-	@echo "$(LILAC_TRUE)        by fpedroso & mona — 42 São Paulo$(RESET)"
+	@echo "$(LILAC_TRUE)         by fil & mona — 42 São Paulo$(RESET)"
 	@echo ""
 	@echo "$(GREEN)  Compiled successfully! Ready to cast some rays! ✨$(RESET)"
 	@echo ""

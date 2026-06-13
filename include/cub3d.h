@@ -13,6 +13,7 @@
 #ifndef CUB3D_H
 # define CUB3D_H
 
+
 # include <stdio.h>
 # include <stdlib.h>
 # include <unistd.h>
@@ -40,9 +41,20 @@
 
 # define MAP_PX_H (SQUARE_SZ * MAP_H)
 # define MAP_PX_W (SQUARE_SZ * MAP_W)
-# define BLUE 0x0000FFFF
-# define BLACK 0xFFFAFAFA
+
+# define BLUE	0x0000FFFF
+# define RED	0xFF0000FF
+# define BLACK	0xFFFAFAFA
+
 # define CIRCLE_R 10
+# define CIRCLE_DIAM (CIRCLE_R * 2)
+
+
+/* ========================================================================== */
+/*                                TEMPORARIO                                  */
+/* ========================================================================== */
+
+int	gridmap[MAP_H][MAP_W];
 
 /* ========================================================================== */
 /*                                   ENUMS                                    */
@@ -60,7 +72,8 @@ typedef enum e_error
 	ERR_MAP_PLAYER,
 	ERR_MISSING_TEX,
 	ERR_INVALID_COLOR,
-	ERR_INVALID_ID
+	ERR_INVALID_ID,
+	ERR_MLX
 }	t_error;
 
 /* ========================================================================== */
@@ -100,11 +113,17 @@ typedef struct s_point
 typedef struct s_game
 {
 	mlx_t		*mlx;
-	mlx_image_t	*image;
+	mlx_image_t	*map_img;
+	mlx_image_t	*player_img;
 	t_map		map;
 	t_config	config;
 	t_player	player;
 }	t_game;
+
+/* ========================================================================== */
+/*                                   MLX                                      */
+/* ========================================================================== */
+bool	config_mlx(t_game *game);
 
 /* ========================================================================== */
 /*                                  PARSING                                   */
@@ -116,6 +135,14 @@ int		parse_map_grid(int fd, t_map *map, char *first_map_line, t_player *player);
 int		parse_meta(int fd, t_config *config, char **first_map_line);
 int		parse_cub(const char *path, t_game *game);
 int		find_player(char **map, t_player *player);
+
+/* ========================================================================== */
+/*                                RENDERING                                   */
+/* ========================================================================== */
+void	run_minimap_mode(t_game *game);
+void	draw_minimap(t_game *game);
+void	draw_player(void* param);
+
 
 /* ========================================================================== */
 /*                                RAYCASTING                                  */

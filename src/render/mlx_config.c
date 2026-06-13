@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../../../include/cub3d.h"
+#include "cub3d.h"
 
 static bool	initiate_mlx(t_game *game);
 static bool	add_map_img(t_game *game);
@@ -20,16 +20,19 @@ bool	config_mlx(t_game *game)
 {
 	if (!initiate_mlx(game))
 		return (false);
+
 	if (!add_map_img(game))
 	{
-		mlx_close_window(game->mlx);
+		mlx_terminate(game->mlx);
 		return (false);
 	}
+
 	if (!add_player_img(game))
 	{
-		mlx_close_window(game->mlx);
+		mlx_terminate(game->mlx);
 		return (false);
 	}
+
 	return (true);
 }
 
