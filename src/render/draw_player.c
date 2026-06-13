@@ -13,20 +13,17 @@
 #include "cub3d.h"
 
 static void		update_position(t_game *game);
-static t_point	get_starting_pos();
-static void		redraw(t_game *game, t_point offset);
+static void		redraw(t_game *game);
 static bool		belongs_in_circle(uint32_t y, uint32_t x);
 // static bool		is_collision(mlx_image_t* img1, int inst1_id, mlx_image_t* img2, int inst2_id);
 
 void	draw_player(void* param)
 {
 	t_game	*game;
-	t_point	starting_offset;
 
 	game = (t_game *)param;
 	update_position(game);
-	starting_offset = get_starting_pos();
-	redraw(game, starting_offset);
+	redraw(game);
 }
 
 static void	update_position(t_game *game)
@@ -48,32 +45,7 @@ static void	update_position(t_game *game)
 	} */
 }
 
-static t_point	get_starting_pos()
-{
-	t_point		ret;
-	uint32_t	i;
-	uint32_t	j;
-
-	i = 0;
-	while (i < MAP_H)
-	{
-		j = 0;
-		while (j < MAP_W)
-		{
-			if (gridmap[i][j] == 2)
-			{
-				ret.y = i * SQUARE_SZ;
-				ret.x = j * SQUARE_SZ;
-				return (ret);
-			}
-			j++;
-		}
-		i++;
-	}
-	return ((t_point){0, 0});
-}
-
-static void	redraw(t_game *game, t_point offset)
+static void	redraw(t_game *game)
 {
 	uint32_t	y;
 	uint32_t	x;
@@ -86,7 +58,7 @@ static void	redraw(t_game *game, t_point offset)
 		{
 			if (belongs_in_circle(y, x))
 			{
-				mlx_put_pixel(game->player_img, x + offset.x , y + offset.y, RED);
+				mlx_put_pixel(game->player_img, x, y, RED);
 			}
 			x++;
 		}
