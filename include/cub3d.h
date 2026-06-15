@@ -35,7 +35,7 @@
 # define SCR_W 500
 # define SCR_H 500
 
-# define SQUARE_SZ 40
+# define SQUARE_SZ 40.0
 # define MAP_W 10
 # define MAP_H 10
 
@@ -46,10 +46,10 @@
 # define RED	0xFF0000FF
 # define BLACK	0xFFFAFAFA
 
-# define CIRCLE_R 10
+# define CIRCLE_R 10.0
 # define CIRCLE_DIAM (CIRCLE_R * 2)
 
-# define MVMT_INCR 5
+# define MVMT_INCR 5.0
 
 /* ========================================================================== */
 /*                                TEMPORARIO                                  */
@@ -105,6 +105,18 @@ typedef struct s_player
 	char	dir;
 }	t_player;
 
+typedef struct s_dbl_coord
+{
+	double	x;
+	double	y;
+}	t_dbl_coord;
+
+typedef struct s_int_coord
+{
+	int32_t	x;
+	int32_t	y;
+}	t_int_coord;
+
 typedef struct s_point
 {
 	uint32_t	x;
@@ -148,7 +160,7 @@ void	draw_player(void* param);
 /* ========================================================================== */
 /*                                RAYCASTING                                  */
 /* ========================================================================== */
-
+void	cast_rays(t_game *game);
 
 /* ========================================================================== */
 /*                                  UTILS                                     */

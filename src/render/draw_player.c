@@ -24,6 +24,7 @@ void	draw_player(void* param)
 	game = (t_game *)param;
 	update_position(game);
 	redraw(game);
+	cast_rays(game);
 }
 
 static void	update_position(t_game *game)
