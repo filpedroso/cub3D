@@ -105,7 +105,8 @@ typedef struct s_player
 {
 	double	x;
 	double	y;
-	char	dir;
+	char	dir_c;
+	float	dir_ang;
 }	t_player;
 
 typedef struct s_dbl_coord

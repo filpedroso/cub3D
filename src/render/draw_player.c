@@ -6,7 +6,7 @@
 /*   By: fpedroso <fpedroso@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/06/13 15:49:44 by fpedroso          #+#    #+#             */
-/*   Updated: 2026/06/13 15:49:44 by fpedroso         ###   ########.fr       */
+/*   Updated: 2026/06/16 18:42:10 by fpedroso         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,9 @@
 static void		update_position(t_game *game);
 static void		redraw(t_game *game);
 static bool		belongs_in_circle(uint32_t y, uint32_t x);
-static bool		will_collide(mlx_image_t *map_img, mlx_image_t *player_img, int32_t x_incr, int32_t y_incr);
+static bool		will_collide(t_game *game, int32_t x_incr, int32_t y_incr);
+void			pan_side(t_game *game, char side);
+void			walk(t_game *game, char dir);
 
 void	draw_player(void* param)
 {
@@ -29,24 +31,44 @@ void	draw_player(void* param)
 static void	update_position(t_game *game)
 {
 	if (mlx_is_key_down(game->mlx, MLX_KEY_UP))
-	{
-		if (!will_collide(game->map_img, game->player_img, 0, -MVMT_INCR))
-			game->player_img->instances[0].y -= MVMT_INCR;
-	}
+		walk(game, 'F');
 	if (mlx_is_key_down(game->mlx, MLX_KEY_DOWN))
-	{
-		if (!will_collide(game->map_img, game->player_img, 0, MVMT_INCR))
-			game->player_img->instances[0].y += MVMT_INCR;
-	}
+		walk(game, 'B');
 	if (mlx_is_key_down(game->mlx, MLX_KEY_LEFT))
-	{
-		if (!will_collide(game->map_img, game->player_img, -MVMT_INCR, 0))
-			game->player_img->instances[0].x -= MVMT_INCR;
-	}
+		pan_side(game, 'L');
 	if (mlx_is_key_down(game->mlx, MLX_KEY_RIGHT))
+		pan_side(game, 'R');
+}
+
+void	walk(t_game *game, char dir)
+{
+	double	rad;
+	int32_t	dx;
+	int32_t	dy;
+
+	rad = game->player.dir_ang * (M_PI / 180.0);
+	dx = (int32_t)(cos(rad) * MVMT_INCR);
+	dy = (int32_t)(sin(rad) * MVMT_INCR);
+	if (dir == 'B')
 	{
-		if (!will_collide(game->map_img, game->player_img, MVMT_INCR, 0))
-			game->player_img->instances[0].x += MVMT_INCR;
+		dx = -dx;
+		dy = -dy;
+	}
+	if (!will_collide(game, dx, 0))
+		game->player_img->instances[0].x += dx;
+	if (!will_collide(game, 0, dy))
+		game->player_img->instances[0].y += dy;
+}
+
+void	pan_side(t_game *game, char side)
+{
+	if (side == 'L')
+	{
+		game->player.dir_ang -= 3.0;
+	}
+	else
+	{
+		game->player.dir_ang += 3.0;
 	}
 }
 
@@ -81,31 +103,30 @@ static bool	belongs_in_circle(uint32_t y, uint32_t x)
 	return ((c_x) * (c_x) + (c_y) * (c_y) <= CIRCLE_R * CIRCLE_R);
 }
 
-static bool	will_collide(mlx_image_t *map_img, mlx_image_t *player_img, int32_t x_incr, int32_t y_incr)
+static bool	will_collide(t_game *game, int32_t x_incr, int32_t y_incr)
 {
-	uint32_t	map_pixel;
-	uint32_t	px;
-	uint32_t	py;
-	uint32_t	i;
-	uint32_t	j;
+	int32_t	px;
+	int32_t	py;
+	int		left;
+	int		right;
+	int		top;
+	int		bottom;
 
-	px = player_img->instances[0].x + x_incr;
-	py = player_img->instances[0].y + y_incr;
-	i = 0;
-	while (i < player_img->height)
-	{
-		j = 0;
-		while (j < player_img->width)
-		{
-			if ((px + j) < map_img->width && (py + i) < map_img->height)
-			{
-				map_pixel = ((uint32_t *)map_img->pixels)[(py + i) * map_img->width + (px + j)];
-				if (map_pixel == 4294901760)
-					return (true);
-			}
-			j++;
-		}
-		i++;
-	}
+	px = game->player_img->instances[0].x + x_incr;
+	py = game->player_img->instances[0].y + y_incr;
+	left = px / (int)SQUARE_SZ;
+	right = (px + (int)CIRCLE_DIAM - 1) / (int)SQUARE_SZ;
+	top = py / (int)SQUARE_SZ;
+	bottom = (py + (int)CIRCLE_DIAM - 1) / (int)SQUARE_SZ;
+	if (left < 0 || right >= MAP_W || top < 0 || bottom >= MAP_H)
+		return (true);
+	if (gridmap[top][left] == 1)
+		return (true);
+	if (gridmap[top][right] == 1)
+		return (true);
+	if (gridmap[bottom][left] == 1)
+		return (true);
+	if (gridmap[bottom][right] == 1)
+		return (true);
 	return (false);
 }

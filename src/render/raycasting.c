@@ -18,12 +18,13 @@ static double	cast_one_ray(double pos_x, double pos_y, t_dbl_coord ray_dir);
 void	cast_rays(t_game *game)
 {
 	double		ray_angle; // em radianos
+	double		ray_angle_base; // em radianos
 	double		perp_dist;
 	t_dbl_coord	ray_dir;
 	t_player	pl;
 	int			i;
 
-	ray_angle = 90 * (M_PI / 180.0);
+	ray_angle_base = (double)game->player.dir_ang * (M_PI / 180.0);
 
 	// faz virar float no plano matematico (e nao em pixels)
 	pl.x = (double)(game->player_img->instances[0].x + CIRCLE_R) / SQUARE_SZ;
@@ -32,7 +33,7 @@ void	cast_rays(t_game *game)
 	i = 0;
 	while (i < SCR_W)
 	{
-		ray_angle = (90 * (M_PI / 180.0)) - HALF_FOV + (i * FOV / SCR_W);
+		ray_angle = ray_angle_base - HALF_FOV + (i * FOV / SCR_W);
 
 		ray_dir.x = cos(ray_angle);
 		ray_dir.y = sin(ray_angle);
