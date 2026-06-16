@@ -23,6 +23,7 @@ void	draw_minimap(t_game *game)
 	uint32_t	j;
 
 	image = game->map_img;
+	ft_memset(image->pixels, 0, image->width * image->height * sizeof(uint32_t));
 	i = 0;
 	while(i < image->height)
 	{
@@ -67,7 +68,7 @@ static bool	is_in_grid(int i, int j)
 		return (true);
 	if (i > MAP_PX_H || j > MAP_PX_W)
 		return (false);
-	inset_x = i % SQUARE_SZ;
-	inset_y = j % SQUARE_SZ;
+	inset_x = i % (int)SQUARE_SZ;
+	inset_y = j % (int)SQUARE_SZ;
 	return (inset_x == 0 || inset_y == 0);
 }

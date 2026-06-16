@@ -44,10 +44,13 @@
 
 # define BLUE	0x0000FFFF
 # define RED	0xFF0000FF
+# define PURPLE	0xFF00FFFF
 # define BLACK	0xFFFAFAFA
 
 # define CIRCLE_R 10.0
 # define CIRCLE_DIAM (CIRCLE_R * 2)
+#define FOV       (60.0 * M_PI / 180.0)
+#define HALF_FOV  (30.0 * M_PI / 180.0)
 
 # define MVMT_INCR 5.0
 

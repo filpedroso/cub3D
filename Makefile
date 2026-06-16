@@ -39,6 +39,7 @@ FILES :=	main.c					\
 			render/draw_minimap.c	\
 			render/draw_player.c	\
 			render/mlx_config.c		\
+			render/raycasting.c		\
 			utils/utils.c
 
 SRC := $(addprefix $(SRC_DIR)/,$(FILES))

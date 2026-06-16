@@ -24,7 +24,6 @@ void	draw_player(void* param)
 	game = (t_game *)param;
 	update_position(game);
 	redraw(game);
-	cast_rays(game);
 }
 
 static void	update_position(t_game *game)
@@ -81,8 +80,6 @@ static bool	belongs_in_circle(uint32_t y, uint32_t x)
 	c_y = y - CIRCLE_R;
 	return ((c_x) * (c_x) + (c_y) * (c_y) <= CIRCLE_R * CIRCLE_R);
 }
-
-
 
 static bool	will_collide(mlx_image_t *map_img, mlx_image_t *player_img, int32_t x_incr, int32_t y_incr)
 {
