@@ -53,6 +53,7 @@
 #define HALF_FOV  (30.0 * M_PI / 180.0)
 
 # define MVMT_INCR 5.0
+# define PAN_INCR 3.0
 
 /* ========================================================================== */
 /*                                TEMPORARIO                                  */
@@ -121,6 +122,14 @@ typedef struct s_int_coord
 	int32_t	y;
 }	t_int_coord;
 
+typedef struct s_int_dir
+{
+	int32_t	up;
+	int32_t	down;
+	int32_t	left;
+	int32_t	right;
+}	t_int_dir;
+
 typedef struct s_point
 {
 	uint32_t	x;
@@ -136,6 +145,30 @@ typedef struct s_game
 	t_config	config;
 	t_player	player;
 }	t_game;
+
+typedef struct s_ray
+{
+	double		angle;		// em radianos
+	double		perp_dist;
+	t_dbl_coord	dir_coord;
+}	t_ray;
+
+typedef struct s_canvas_ray
+{
+	t_dbl_coord	start;
+	t_dbl_coord	end;
+	t_dbl_coord	current;
+	t_dbl_coord	diff;
+}	t_canvas_ray;
+
+typedef struct s_casting_ray
+{
+	t_dbl_coord	delta_dist;
+	t_int_coord	map_pos;
+	t_int_coord	step_dir;
+	t_dbl_coord	side_dist;
+	int			side;
+}	t_casting_ray;
 
 /* ========================================================================== */
 /*                                   MLX                                      */
@@ -159,12 +192,14 @@ int		find_player(char **map, t_player *player);
 void	run_minimap_mode(t_game *game);
 void	draw_minimap(t_game *game);
 void	draw_player(void* param);
+void	update_pl_position(t_game *game);
 
 
 /* ========================================================================== */
 /*                                RAYCASTING                                  */
 /* ========================================================================== */
 void	cast_rays(t_game *game);
+void	draw_ray(t_game *game, t_player pl, t_dbl_coord ray_dir, double perp_dist);
 
 /* ========================================================================== */
 /*                                  UTILS                                     */
