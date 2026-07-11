@@ -24,6 +24,7 @@ obj/
 # Logs
 *.log
 valgrind-out.txt
+*_session_log.md
 
 # Test files
 tester/
