@@ -13,7 +13,7 @@
 NAME = cub3D
 
 CC := gcc
-CFLAGS := -Wall -Wextra -Werror -g -Iinclude -Ilibft -IMLX42/include
+CFLAGS := -Wall -Wextra -Werror -g -fsanitize=address,undefined -Iinclude -Ilibft -IMLX42/include
 # Asan: -fsanitize=address,undefined
 
 # Colors
@@ -44,6 +44,12 @@ FILES :=	main.c				 \
 			parser/free_utils.c	 \
 			utils/utils.c		 \
 			render/render.c		 \
+			render/draw_minimap.c	\
+			render/draw_player.c	\
+			render/mlx_config.c		\
+			render/raycasting.c		\
+			render/update_pl_pos.c	\
+			render/draw_ray.c
 
 SRC := $(addprefix $(SRC_DIR)/,$(FILES))
 OBJ := $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(SRC))
@@ -109,7 +115,7 @@ banner:
 	@printf '%b\n' "$(LILAC_TRUE)  ╚═════╝ ╚═════╝ ╚═════╝ ╚═════╝ ╚═════╝ $(RESET)"
 	@echo ""
 	@echo "$(LILAC_TRUE)        🎮 First-Person Raycaster in C$(RESET)"
-	@echo "$(LILAC_TRUE)        by fpedroso & mona — 42 São Paulo$(RESET)"
+	@echo "$(LILAC_TRUE)         by fil & mona — 42 São Paulo$(RESET)"
 	@echo ""
 	@echo "$(GREEN)  Compiled successfully! Ready to cast some rays! ✨$(RESET)"
 	@echo ""

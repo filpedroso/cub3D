@@ -63,7 +63,7 @@ static void	print_player(t_player *player)
 	printf("\n--- PLAYER ---\n");
 	printf("x   : %f\n", player->x);
 	printf("y   : %f\n", player->y);
-	printf("dir : %c\n", player->dir);
+	printf("dir : %c\n", player->dir_c);
 }
 
 int	main(int argc, char **argv)

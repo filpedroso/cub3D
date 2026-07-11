@@ -84,7 +84,7 @@ int	find_player(char **map, t_player *player)
 			{
 				player->x = j;
 				player->y = i;
-				player->dir = map[i][j];
+				player->dir_c = map[i][j];
 				map[i][j] = '0';
 				return (ERR_NONE);
 			}
