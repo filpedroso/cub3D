@@ -1,0 +1,4 @@
+north.png, south.png, west.png, east.png
+Source: Kenney "Retro Textures Fantasy" pack (kenney.nl/assets/retro-textures-fantasy)
+License: CC0 1.0 Universal (public domain) — https://creativecommons.org/publicdomain/zero/1.0/
+Cropped to 64x64 from the original 64x128 files. Attribution not required, credited anyway.
