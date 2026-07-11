@@ -38,6 +38,8 @@ FILES :=	main.c				 \
 			parser/parser.c		 \
 			parser/parser_meta.c \
 			parser/parser_map.c	 \
+			parser/parser_color.c \
+			parser/parser_walls.c \
 			parser/file_utils.c	 \
 			parser/free_utils.c	 \
 			utils/utils.c		 \
@@ -45,6 +47,17 @@ FILES :=	main.c				 \
 
 SRC := $(addprefix $(SRC_DIR)/,$(FILES))
 OBJ := $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(SRC))
+
+TEST_NAME := test_parser
+TEST_OBJS :=	$(OBJ_DIR)/main_test.o			 \
+				$(OBJ_DIR)/parser/parser.o		 \
+				$(OBJ_DIR)/parser/parser_meta.o \
+				$(OBJ_DIR)/parser/parser_map.o	 \
+				$(OBJ_DIR)/parser/parser_color.o \
+				$(OBJ_DIR)/parser/parser_walls.o \
+				$(OBJ_DIR)/parser/file_utils.o	 \
+				$(OBJ_DIR)/parser/free_utils.o	 \
+				$(OBJ_DIR)/utils/utils.o		 \
 
 all: $(NAME)
 
@@ -60,13 +73,18 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 $(LIBFT):
 	@$(MAKE) -C $(LIBFT_DIR) --no-print-directory
 
+test: $(TEST_OBJS) $(LIBFT)
+	@$(CC) $(CFLAGS) $(TEST_OBJS) $(LIBFT) $(MLX) $(GLFW) \
+		-framework Cocoa -framework OpenGL -framework IOKit -o $(TEST_NAME)
+	@echo "$(GREEN)Parser test binary built: ./$(TEST_NAME) <map.cub>$(RESET)"
+
 clean:
 	@rm -rf $(OBJ_DIR)
 	@$(MAKE) -C $(LIBFT_DIR) clean --no-print-directory
 	@echo "$(RED)cub3D objects removed$(RESET)"
 
 fclean: clean
-	@rm -f $(NAME)
+	@rm -f $(NAME) $(TEST_NAME)
 	@$(MAKE) -C $(LIBFT_DIR) fclean --no-print-directory
 	@echo "$(RED)cub3D deleted$(RESET)"
 
@@ -96,4 +114,4 @@ banner:
 	@echo "$(GREEN)  Compiled successfully! Ready to cast some rays! ✨$(RESET)"
 	@echo ""
 
-.PHONY: all clean fclean re val banner
+.PHONY: all clean fclean re val banner test
