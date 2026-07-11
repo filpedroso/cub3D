@@ -56,6 +56,91 @@ int	has_only_valid_chars(char **map)
 }
 
 /**
+ * @brief Checks whether a single grid cell is a valid neighbor.
+ *
+ * A neighbor is invalid if it falls outside the grid's row bounds,
+ * outside the specific row's column bounds (rows may have different
+ * lengths), or if it is a space character (an opening to the outside).
+ *
+ * @param map  NULL-terminated 2D array representing the map grid.
+ * @param rows Total number of rows in the grid.
+ * @param row  Row index of the neighbor to check.
+ * @param col  Column index of the neighbor to check.
+ *
+ * @return TRUE if the neighbor is a valid, closed cell, FALSE otherwise.
+ */
+static int	is_valid_neighbor(char **map, int rows, int row, int col)
+{
+	if (row < 0 || row >= rows)
+		return (FALSE);
+	if (col < 0 || (size_t)col >= ft_strlen(map[row]))
+		return (FALSE);
+	if (map[row][col] == ' ')
+		return (FALSE);
+	return (TRUE);
+}
+
+/**
+ * @brief Checks the four cardinal neighbors of a single grid cell.
+ *
+ * @param map  NULL-terminated 2D array representing the map grid.
+ * @param rows Total number of rows in the grid.
+ * @param i    Row index of the cell being checked.
+ * @param j    Column index of the cell being checked.
+ *
+ * @return TRUE if all four neighbors are valid, FALSE otherwise.
+ */
+static int	check_cell_neighbors(char **map, int rows, int i, int j)
+{
+	if (!is_valid_neighbor(map, rows, i - 1, j))
+		return (FALSE);
+	if (!is_valid_neighbor(map, rows, i + 1, j))
+		return (FALSE);
+	if (!is_valid_neighbor(map, rows, i, j - 1))
+		return (FALSE);
+	if (!is_valid_neighbor(map, rows, i, j + 1))
+		return (FALSE);
+	return (TRUE);
+}
+
+/**
+ * @brief Validates that the map is fully enclosed by walls.
+ *
+ * Walks every walkable cell in the grid ('0', 'N', 'S', 'E', 'W', 'D')
+ * and checks that its four neighbors are valid closed cells. If any
+ * walkable cell borders a space or the edge of the grid, the map is
+ * considered open.
+ *
+ * @param map  NULL-terminated 2D array representing the map grid.
+ * @param rows Total number of rows in the grid.
+ *
+ * @return TRUE if the map is closed, FALSE if any leak is found.
+ */
+int	has_closed_walls(char **map, int rows)
+{
+	int		i;
+	int		j;
+	char	c;
+
+	i = 0;
+	while (i < rows)
+	{
+		j = 0;
+		while (map[i][j])
+		{
+			c = map[i][j];
+			if ((c == '0' || c == 'N' || c == 'S' || c == 'E'
+					|| c == 'W' || c == 'D')
+				&& !check_cell_neighbors(map, rows, i, j))
+				return (FALSE);
+			j++;
+		}
+		i++;
+	}
+	return (TRUE);
+}
+
+/**
  * @brief Finds the player spawn in the map grid and populates t_player.
  *
  * Searches the grid for a spawn character (N, S, E, W), stores the
@@ -96,26 +181,19 @@ int	find_player(char **map, t_player *player)
 }
 
 /**
- * @brief Reads the map grid from the file descriptor and populates t_map.
+ * @brief Reads all map lines from the fd and builds the char** grid.
  *
- * Starts with first_map_line (already read by parse_meta) and continues
- * reading with get_next_line until EOF. Builds the grid dynamically
- * using ft_append_line, then runs validation steps.
+ * Starts with first_map_line (already read by parse_meta) and
+ * continues reading with get_next_line until EOF, appending each
+ * trimmed line to map->grid via ft_append_line.
  *
  * @param fd             Open file descriptor positioned after metadata.
  * @param map            Pointer to t_map to be populated.
  * @param first_map_line First map line already consumed by parse_meta.
- * @param player         Pointer to t_player to be populated via find_player.
  *
- * @return ERR_NONE on success, or an error code on failure:
- * @retval ERR_MALLOC     If ft_append_line fails to allocate memory.
- * @retval ERR_MAP_CHARS  If the grid contains invalid characters.
- * @retval ERR_MAP_PLAYER If no valid player spawn is found.
- *
- * TODO: add map->cols calculation (longest row).
- * TODO: add has_closed_walls validation -> ERR_MAP_OPEN.
+ * @return ERR_NONE on success, or ERR_MALLOC if ft_append_line fails.
  */
-int	parse_map_grid(int fd, t_map *map, char *first_map_line, t_player *player)
+static int	build_map_grid(int fd, t_map *map, char *first_map_line)
 {
 	char	*line;
 	int		count;
@@ -136,8 +214,39 @@ int	parse_map_grid(int fd, t_map *map, char *first_map_line, t_player *player)
 		line = get_next_line(fd);
 	}
 	map->rows = count;
+	return (ERR_NONE);
+}
+
+/**
+ * @brief Reads the map grid from the file descriptor and populates t_map.
+ *
+ * Delegates line reading to build_map_grid, then runs the validation
+ * pipeline in order: character validity, wall closure, player spawn.
+ *
+ * @param fd             Open file descriptor positioned after metadata.
+ * @param map            Pointer to t_map to be populated.
+ * @param first_map_line First map line already consumed by parse_meta.
+ * @param player         Pointer to t_player to be populated via find_player.
+ *
+ * @return ERR_NONE on success, or an error code on failure:
+ * @retval ERR_MALLOC     If build_map_grid fails to allocate memory.
+ * @retval ERR_MAP_CHARS  If the grid contains invalid characters.
+ * @retval ERR_MAP_OPEN   If the map is not fully closed by walls.
+ * @retval ERR_MAP_PLAYER If no valid player spawn is found.
+ *
+ * TODO: add map->cols calculation (longest row).
+ */
+int	parse_map_grid(int fd, t_map *map, char *first_map_line, t_player *player)
+{
+	int	err;
+
+	err = build_map_grid(fd, map, first_map_line);
+	if (err != ERR_NONE)
+		return (err);
 	if (!has_only_valid_chars(map->grid))
 		return (handle_error(ERR_MAP_CHARS));
+	if (!has_closed_walls(map->grid, map->rows))
+		return (handle_error(ERR_MAP_OPEN));
 	if (find_player(map->grid, player) != ERR_NONE)
 		return (handle_error(ERR_MAP_PLAYER));
 	return (ERR_NONE);

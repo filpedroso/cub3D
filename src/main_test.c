@@ -81,6 +81,7 @@ int	main(int argc, char **argv)
 	if (err != ERR_NONE)
 	{
 		printf("\nParse falhou com codigo: %d\n", err);
+		free_game(&game);
 		return (ERROR);
 	}
 	printf("\nParse bem-sucedido!");
@@ -91,10 +92,6 @@ int	main(int argc, char **argv)
 	printf("grid[player->y][player->x] = '%c' (esperado: '0')\n",
 		game.map.grid[(int)game.player.y][(int)game.player.x]);
 	printf("\nTudo certo! O parser esta funcionando.\n\n");
-	free_map(game.map.grid);
-	free(game.config.tex_north);
-	free(game.config.tex_south);
-	free(game.config.tex_west);
-	free(game.config.tex_east);
+	free_game(&game);
 	return (SUCCESS);
 }

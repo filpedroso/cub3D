@@ -133,5 +133,6 @@ void	free_map(char **map);
 void	free_visited(char **visited);
 void	free_visited_partial(char **visited, int until);
 int		color_error(char **parts);
+void	free_game(t_game *game);
 
 #endif
