@@ -132,5 +132,6 @@ int		handle_error(t_error error);
 void	free_map(char **map);
 void	free_visited(char **visited);
 void	free_visited_partial(char **visited, int until);
+int		color_error(char **parts);
 
 #endif

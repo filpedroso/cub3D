@@ -76,3 +76,19 @@ void	free_visited(char **visited)
 	}
 	free(visited);
 }
+
+/**
+ * @brief Frees a split result and reports an invalid color error.
+ *
+ * Centralizes the cleanup + error pattern shared by every failure
+ * path in parse_color, avoiding repetition across call sites.
+ *
+ * @param parts The split result to free (NULL-safe via free_map).
+ *
+ * @return ERR_INVALID_COLOR, wrapped through handle_error.
+ */
+int	color_error(char **parts)
+{
+	free_map(parts);
+	return (handle_error(ERR_INVALID_COLOR));
+}

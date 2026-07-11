@@ -6,7 +6,7 @@
 /*   By: mona <mona@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/06/07 14:55:45 by mona              #+#    #+#             */
-/*   Updated: 2026/06/07 23:02:25 by mona             ###   ########.fr       */
+/*   Updated: 2026/07/11 16:19:41 by mona             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,30 +71,91 @@ static int	parse_texture(const char *line, char **dest)
 	return (ERR_NONE);
 }
 
-/*
-** parse_color - extrai e valida uma cor RGB
-**
-** Recebe a linha completa ex: "F 220,100,0"
-** e o array int[3] onde guardar os valores (ex: config->floor)
-**
-** Passos:
-** 1. Avancar alem do identificador ("F " ou "C ")
-**    - pular espacos extras
-** 2. Usar ft_split com ',' para separar os tres valores
-**    - se nao tiver exatamente 3 partes, retornar ERR_INVALID_COLOR
-** 3. Para cada valor:
-**    - verificar que e so digitos (ft_isdigit em cada char)
-**    - converter com ft_atoi
-**    - verificar que esta no range [0, 255]
-**    - se qualquer verificacao falhar, retornar ERR_INVALID_COLOR
-** 4. Guardar os tres valores no array dest[0], dest[1], dest[2]
-** 5. Liberar o resultado do ft_split
-** 6. Retornar ERR_NONE
-*/
+/**
+ * @brief Counts the number of parts produced by ft_split.
+ *
+ * @param parts A NULL-terminated array of strings.
+ *
+ * @return The number of non-NULL elements in parts.
+ */
+static int	count_parts(char **parts)
+{
+	int	i;
+
+	i = 0;
+	while (parts[i])
+		i++;
+	return (i);
+}
+
+/**
+ * @brief Validates and converts a single RGB component.
+ *
+ * Ensures parts[i] is a non-empty, all-digit string within [0, 255],
+ * then stores the converted value in dest[i].
+ *
+ * @param parts The split RGB parts (e.g. {"220", "100", "0"}).
+ * @param i     Index of the part to validate (0, 1, or 2).
+ * @param dest  The int[3] destination array (e.g. config->floor).
+ *
+ * @return ERR_NONE on success, or ERR_INVALID_COLOR on failure.
+ */
+static int	check_color_part(char **parts, int i, int *dest)
+{
+	int	j;
+	int	value;
+
+	j = 0;
+	while (parts[i][j])
+	{
+		if (!ft_isdigit(parts[i][j]))
+			return (ERR_INVALID_COLOR);
+		j++;
+	}
+	if (j == 0)
+		return (ERR_INVALID_COLOR);
+	value = ft_atoi(parts[i]);
+	if (value < 0 || value > 255)
+		return (ERR_INVALID_COLOR);
+	dest[i] = value;
+	return (ERR_NONE);
+}
+
+/**
+ * @brief Extracts and validates an RGB color from a metadata line.
+ *
+ * Advances past the one-character identifier ("F " or "C ") and any
+ * trailing spaces, splits the remainder on ',', and validates that
+ * it yields exactly three in-range digit values.
+ *
+ * @param line The full metadata line (e.g. "F 220,100,0").
+ * @param dest The int[3] where the R, G, B values will be stored.
+ *
+ * @return ERR_NONE on success, or an error code on failure:
+ * @retval ERR_INVALID_COLOR If parts count, digits, or range are wrong.
+ * @retval ERR_MALLOC If ft_split fails to allocate memory.
+ */
 static int	parse_color(const char *line, int dest[3])
 {
-	(void)line;
-	(void)dest;
+	char	**parts;
+	int		i;
+
+	line += 2;
+	while (*line == ' ')
+		line++;
+	parts = ft_split(line, ',');
+	if (!parts)
+		return (handle_error(ERR_MALLOC));
+	if (count_parts(parts) != 3)
+		return (color_error(parts));
+	i = 0;
+	while (i < 3)
+	{
+		if (check_color_part(parts, i, dest) != ERR_NONE)
+			return (color_error(parts));
+		i++;
+	}
+	free_map(parts);
 	return (ERR_NONE);
 }
 
@@ -132,24 +193,43 @@ static int	dispatch_meta_line(const char *line, t_config *config)
 }
 
 /**
- * @brief Reads and parses all metadata lines from the .cub file descriptor.
+ * @brief Validates that all required metadata was successfully parsed.
  *
- * Reads line by line using get_next_line, skipping empty lines, and
- * dispatching each metadata line to dispatch_meta_line. Stops when a
- * map line is detected via is_map_line, preserving that line in
- * first_map_line for parse_map_grid to consume.
+ * Checks that all four textures were set and that both floor and
+ * ceiling colors were parsed (via the -1 sentinel set at the start
+ * of parse_meta).
  *
- * @param fd Open file descriptor positioned at the start of the file.
- * @param config Pointer to t_config to be populated with metadata.
- * @param first_map_line Address of a char* to store the first map line.
+ * @param config Pointer to the populated t_config.
  *
  * @return ERR_NONE on success, or an error code on failure:
- * @retval ERR_MISSING_TEX   If any of the four textures (NO/SO/WE/EA) is absent.
- * @retval ERR_INVALID_COLOR If a color line (F/C) is malformed.
- * @retval ERR_INVALID_ID    If an unrecognized identifier is encountered.
- * @retval ERR_MALLOC        If memory allocation fails during parsing.
+ * @retval ERR_MISSING_TEX   If any of the four textures is absent.
+ * @retval ERR_INVALID_COLOR If floor or ceiling color was never set.
  */
-int	parse_meta(int fd, t_config *config, char **first_map_line)
+static int	validate_config(t_config *config)
+{
+	if (!config->tex_north || !config->tex_south
+		|| !config->tex_west || !config->tex_east)
+		return (handle_error(ERR_MISSING_TEX));
+	if (config->floor[0] == -1 || config->ceil[0] == -1)
+		return (handle_error(ERR_INVALID_COLOR));
+	return (ERR_NONE);
+}
+
+/**
+ * @brief Reads metadata lines until the map section is reached.
+ *
+ * Loops via get_next_line, trimming each line and dispatching
+ * non-empty ones through dispatch_meta_line. Stops as soon as a
+ * map line is detected, storing it (or NULL, at EOF) in
+ * first_map_line for parse_map_grid to consume.
+ *
+ * @param fd             Open file descriptor at the start of the file.
+ * @param config         Pointer to t_config to be populated.
+ * @param first_map_line Address of a char* to store the first map line.
+ *
+ * @return ERR_NONE on success, or an error code from dispatch_meta_line.
+ */
+static int	read_meta_lines(int fd, t_config *config, char **first_map_line)
 {
 	char	*line;
 	int		err;
@@ -172,11 +252,35 @@ int	parse_meta(int fd, t_config *config, char **first_map_line)
 		free(line);
 		line = get_next_line(fd);
 	}
-	if (line)
-		*first_map_line = line;
-	if (!config->tex_north || !config->tex_south
-		|| !config->tex_west || !config->tex_east)
-		return (handle_error(ERR_MISSING_TEX));
-	// falta lidar com a color quando parse_color estiver pronto
+	*first_map_line = line;
 	return (ERR_NONE);
+}
+
+/**
+ * @brief Reads and parses all metadata lines from the .cub file descriptor.
+ *
+ * Initializes the color sentinels, delegates line reading and
+ * dispatching to read_meta_lines, then validates that every required
+ * field (four textures, floor and ceiling colors) was populated.
+ *
+ * @param fd Open file descriptor positioned at the start of the file.
+ * @param config Pointer to t_config to be populated with metadata.
+ * @param first_map_line Address of a char* to store the first map line.
+ *
+ * @return ERR_NONE on success, or an error code on failure:
+ * @retval ERR_MISSING_TEX   If any of the four textures (NO/SO/WE/EA) is absent.
+ * @retval ERR_INVALID_COLOR If a color line (F/C) is malformed.
+ * @retval ERR_INVALID_ID    If an unrecognized identifier is encountered.
+ * @retval ERR_MALLOC        If memory allocation fails during parsing.
+ */
+int	parse_meta(int fd, t_config *config, char **first_map_line)
+{
+	int	err;
+
+	config->floor[0] = -1;
+	config->ceil[0] = -1;
+	err = read_meta_lines(fd, config, first_map_line);
+	if (err != ERR_NONE)
+		return (err);
+	return (validate_config(config));
 }
