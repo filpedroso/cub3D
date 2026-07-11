@@ -49,7 +49,7 @@ static void	print_map(t_map *map)
 {
 	int	i;
 
-	printf("\n--- MAP GRID (%d rows) ---\n", map->rows);
+	printf("\n--- MAP GRID (%d rows, %d cols max) ---\n", map->rows, map->cols);
 	i = 0;
 	while (i < map->rows)
 	{

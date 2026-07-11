@@ -96,11 +96,30 @@ int	find_player(char **map, t_player *player)
 }
 
 /**
+ * @brief Updates map->cols if line is longer than the current max.
+ *
+ * Tracks the length of the longest row seen so far, since map rows
+ * may have different lengths (ragged grid).
+ *
+ * @param map  Pointer to t_map whose cols field will be updated.
+ * @param line The row to measure.
+ */
+static void	update_max_cols(t_map *map, const char *line)
+{
+	int	len;
+
+	len = (int)ft_strlen(line);
+	if (len > map->cols)
+		map->cols = len;
+}
+
+/**
  * @brief Reads all map lines from the fd and builds the char** grid.
  *
  * Starts with first_map_line (already read by parse_meta) and
  * continues reading with get_next_line until EOF, appending each
- * trimmed line to map->grid via ft_append_line.
+ * trimmed line to map->grid via ft_append_line. Tracks map->cols
+ * as the length of the longest row along the way.
  *
  * @param fd             Open file descriptor positioned after metadata.
  * @param map            Pointer to t_map to be populated.
@@ -115,9 +134,11 @@ static int	build_map_grid(int fd, t_map *map, char *first_map_line)
 
 	line = first_map_line;
 	count = 0;
+	map->cols = 0;
 	while (line)
 	{
 		trim_newline(line);
+		update_max_cols(map, line);
 		map->grid = ft_append_line(map->grid, line, count);
 		if (!map->grid)
 		{
@@ -148,8 +169,6 @@ static int	build_map_grid(int fd, t_map *map, char *first_map_line)
  * @retval ERR_MAP_CHARS  If the grid contains invalid characters.
  * @retval ERR_MAP_OPEN   If the map is not fully closed by walls.
  * @retval ERR_MAP_PLAYER If no valid player spawn is found.
- *
- * TODO: add map->cols calculation (longest row).
  */
 int	parse_map_grid(int fd, t_map *map, char *first_map_line, t_player *player)
 {
