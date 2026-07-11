@@ -16,18 +16,21 @@ de hoje. Risco real de conflito, principalmente em `cub3d.h` e `main.c`.
 
 ### Testar sem risco (scratch branch, descartável)
 
-**Passo 0 — pré-requisito**: mergear o PR da `feat/parser-todo` na
-`main` primeiro (fast-forward puro, sem conflito — confirmado dia
-11/07). Depois disso:
-
 ```bash
-git checkout main
-git pull origin main
-git checkout -b scratch/test-integration main
+git checkout feat/parser-todo
+git pull origin feat/parser-todo
+git checkout -b scratch/test-integration feat/parser-todo
 git merge origin/feat/render --no-commit --no-ff
 ```
+- Criar a partir da `feat/parser-todo` (não da `main`) — como ela é
+  fast-forward de `main` + commits da Mona, o resultado do merge é
+  idêntico, mas sem mexer na `main` compartilhada antes de alinhar
+  com o Fil
 - `--no-commit` deixa ver os conflitos sem finalizar nada
-- Se der ruim: `git merge --abort` desfaz tudo, `main` fica intocada
+- Se der ruim: `git merge --abort` desfaz tudo, `feat/parser-todo`
+  fica intocada
+- Se achar algo pra corrigir: volta pra `feat/parser-todo`, corrige
+  lá, só decide sobre merge na `main` depois de alinhar com o Fil
 - Essa branch `scratch/*` não precisa nem de push, é só pra você
   entender antes da call com o Fil: (1) se o parser dela funciona
   de verdade integrado ao raycasting dele, (2) onde estão os
@@ -50,14 +53,15 @@ O plano original era "Fil cria branch de integração a partir da
 `feat/parser-todo`" — mas na prática ele continuou na `feat/render`
 dele, criada direto da `main` desde o início (confirmado via
 `git merge-base`: as duas branches têm o mesmo ancestral comum,
-`2bd255b`). Novo plano, mais simples:
-1. Mona mergeia `feat/parser-todo` → `main` (fast-forward, sem
-   conflito, já que ninguém mais tocou a `main` nesse meio tempo)
-2. Fil reconcilia a `feat/render` dele contra a `main` atualizada
-   (merge ou rebase — ele decide, é o código dele)
-3. Reconhecimento na scratch branch (acima) é feito por Mona ANTES
-   da call com o Fil, só pra entender os atritos e explicar melhor
-   pra ele, sem perder tempo resolvendo isso ao vivo
+`2bd255b`). Novo plano:
+1. Mona faz o reconhecimento numa scratch branch a partir da
+   `feat/parser-todo` (acima) — sem mexer na `main` compartilhada
+2. Se achar algo pra corrigir, corrige na `feat/parser-todo` e
+   testa de novo
+3. **Só depois de alinhar com o Fil** (call), decide o timing do
+   merge `feat/parser-todo` → `main` e como ele reconcilia a
+   `feat/render` dele contra a `main` atualizada (merge ou rebase —
+   decisão dele, é o código dele)
 
 ---
 
