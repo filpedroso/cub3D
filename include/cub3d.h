@@ -181,6 +181,9 @@ bool	config_mlx(t_game *game);
 int		has_cub_extension(const char *filename);
 int		has_png_extension(const char *filename);
 char	*trim_newline(char *line);
+int		parse_texture(const char *line, char **dest);
+int		parse_color(const char *line, int dest[3]);
+int		has_closed_walls(char **map, int rows);
 int		parse_map_grid(int fd, t_map *map, char *first_map_line, t_player *player);
 int		parse_meta(int fd, t_config *config, char **first_map_line);
 int		parse_cub(const char *path, t_game *game);
@@ -209,5 +212,7 @@ int		handle_error(t_error error);
 void	free_map(char **map);
 void	free_visited(char **visited);
 void	free_visited_partial(char **visited, int until);
+int		color_error(char **parts);
+void	free_game(t_game *game);
 
 #endif

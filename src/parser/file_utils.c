@@ -86,3 +86,37 @@ char	*trim_newline(char *line)
 		line[len - 1] = '\0';
 	return (line);
 }
+
+/**
+ * @brief Extracts and validates a texture path from a metadata line.
+ *
+ * Advances past the two-character identifier (e.g. "NO") and any
+ * trailing spaces, then validates that the remaining path exists and
+ * ends with the ".png" extension. On success, duplicates the path
+ * string and stores it in the destination pointer.
+ *
+ * @param line  The full metadata line (e.g. "NO ./assets/north.png").
+ * @param dest  Pointer to the char* where the path will be stored.
+ *
+ * @return ERR_NONE on success, or an error code on failure:
+ * @retval ERR_MISSING_TEX If the path is empty or not a .png file.
+ * @retval ERR_MALLOC If ft_strdup fails to allocate memory.
+ */
+int	parse_texture(const char *line, char **dest)
+{
+	const char	*path;
+	char		*tmp;
+
+	path = line + 2;
+	while (*path == ' ')
+		path++;
+	if (*path == '\0')
+		return (handle_error(ERR_MISSING_TEX));
+	if (!has_png_extension(path))
+		return (handle_error(ERR_MISSING_TEX));
+	tmp = ft_strdup(path);
+	if (!tmp)
+		return (handle_error(ERR_MALLOC));
+	*dest = tmp;
+	return (ERR_NONE);
+}

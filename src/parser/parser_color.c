@@ -1,0 +1,101 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   parser_color.c                                     :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: mona <mona@student.42.fr>                  +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/07/11 18:00:00 by mona              #+#    #+#             */
+/*   Updated: 2026/07/11 18:00:00 by mona             ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+#include "../../include/cub3d.h"
+
+/**
+ * @brief Counts the number of parts produced by ft_split.
+ *
+ * @param parts A NULL-terminated array of strings.
+ *
+ * @return The number of non-NULL elements in parts.
+ */
+static int	count_parts(char **parts)
+{
+	int	i;
+
+	i = 0;
+	while (parts[i])
+		i++;
+	return (i);
+}
+
+/**
+ * @brief Validates and converts a single RGB component.
+ *
+ * Ensures parts[i] is a non-empty, all-digit string within [0, 255],
+ * then stores the converted value in dest[i].
+ *
+ * @param parts The split RGB parts (e.g. {"220", "100", "0"}).
+ * @param i     Index of the part to validate (0, 1, or 2).
+ * @param dest  The int[3] destination array (e.g. config->floor).
+ *
+ * @return ERR_NONE on success, or ERR_INVALID_COLOR on failure.
+ */
+static int	check_color_part(char **parts, int i, int *dest)
+{
+	int	j;
+	int	value;
+
+	j = 0;
+	while (parts[i][j])
+	{
+		if (!ft_isdigit(parts[i][j]))
+			return (ERR_INVALID_COLOR);
+		j++;
+	}
+	if (j == 0)
+		return (ERR_INVALID_COLOR);
+	value = ft_atoi(parts[i]);
+	if (value < 0 || value > 255)
+		return (ERR_INVALID_COLOR);
+	dest[i] = value;
+	return (ERR_NONE);
+}
+
+/**
+ * @brief Extracts and validates an RGB color from a metadata line.
+ *
+ * Advances past the one-character identifier ("F " or "C ") and any
+ * trailing spaces, splits the remainder on ',', and validates that
+ * it yields exactly three in-range digit values.
+ *
+ * @param line The full metadata line (e.g. "F 220,100,0").
+ * @param dest The int[3] where the R, G, B values will be stored.
+ *
+ * @return ERR_NONE on success, or an error code on failure:
+ * @retval ERR_INVALID_COLOR If parts count, digits, or range are wrong.
+ * @retval ERR_MALLOC If ft_split fails to allocate memory.
+ */
+int	parse_color(const char *line, int dest[3])
+{
+	char	**parts;
+	int		i;
+
+	line += 2;
+	while (*line == ' ')
+		line++;
+	parts = ft_split(line, ',');
+	if (!parts)
+		return (handle_error(ERR_MALLOC));
+	if (count_parts(parts) != 3)
+		return (color_error(parts));
+	i = 0;
+	while (i < 3)
+	{
+		if (check_color_part(parts, i, dest) != ERR_NONE)
+			return (color_error(parts));
+		i++;
+	}
+	free_map(parts);
+	return (ERR_NONE);
+}

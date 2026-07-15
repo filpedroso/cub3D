@@ -76,3 +76,37 @@ void	free_visited(char **visited)
 	}
 	free(visited);
 }
+
+/**
+ * @brief Frees a split result and reports an invalid color error.
+ *
+ * Centralizes the cleanup + error pattern shared by every failure
+ * path in parse_color, avoiding repetition across call sites.
+ *
+ * @param parts The split result to free (NULL-safe via free_map).
+ *
+ * @return ERR_INVALID_COLOR, wrapped through handle_error.
+ */
+int	color_error(char **parts)
+{
+	free_map(parts);
+	return (handle_error(ERR_INVALID_COLOR));
+}
+
+/**
+ * @brief Frees all heap-allocated memory owned by the parser in t_game.
+ *
+ * Frees the four texture path strings in config and the map grid.
+ * Scoped to parser-owned data only — MLX resources (mlx, image) are
+ * owned by the render side and must be released separately.
+ *
+ * @param game Pointer to the t_game whose parser data will be freed.
+ */
+void	free_game(t_game *game)
+{
+	free(game->config.tex_north);
+	free(game->config.tex_south);
+	free(game->config.tex_west);
+	free(game->config.tex_east);
+	free_map(game->map.grid);
+}
