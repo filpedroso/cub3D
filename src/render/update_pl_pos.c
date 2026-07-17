@@ -68,15 +68,16 @@ static bool	will_collide(t_game *game, int32_t x_incr, int32_t y_incr)
 	dir.right = (pl.x + (int32_t)CIRCLE_DIAM - 1) / (int32_t)SQUARE_SZ;
 	dir.up = pl.y / (int32_t)SQUARE_SZ;
 	dir.down = (pl.y + (int32_t)CIRCLE_DIAM - 1) / (int32_t)SQUARE_SZ;
-	if (dir.left < 0 || dir.right >= MAP_W || dir.up < 0 || dir.down >= MAP_H)
+	if (dir.left < 0 || dir.right >= game->map.cols
+		|| dir.up < 0 || dir.down >= game->map.rows)
 		return (true);
-	if (gridmap[dir.up][dir.left] == 1)
+	if (game->map.grid[dir.up][dir.left] == '1')
 		return (true);
-	if (gridmap[dir.up][dir.right] == 1)
+	if (game->map.grid[dir.up][dir.right] == '1')
 		return (true);
-	if (gridmap[dir.down][dir.left] == 1)
+	if (game->map.grid[dir.down][dir.left] == '1')
 		return (true);
-	if (gridmap[dir.down][dir.right] == 1)
+	if (game->map.grid[dir.down][dir.right] == '1')
 		return (true);
 	return (false);
 }

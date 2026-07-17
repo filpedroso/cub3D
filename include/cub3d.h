@@ -36,11 +36,6 @@
 # define SCR_H 500
 
 # define SQUARE_SZ 40.0
-# define MAP_W 10
-# define MAP_H 10
-
-# define MAP_PX_H (SQUARE_SZ * MAP_H)
-# define MAP_PX_W (SQUARE_SZ * MAP_W)
 
 # define BLUE	0x0000FFFF
 # define RED	0xFF0000FF
@@ -54,12 +49,6 @@
 
 # define MVMT_INCR 5.0
 # define PAN_INCR 3.0
-
-/* ========================================================================== */
-/*                                TEMPORARIO                                  */
-/* ========================================================================== */
-
-int	gridmap[MAP_H][MAP_W];
 
 /* ========================================================================== */
 /*                                   ENUMS                                    */
