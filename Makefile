@@ -34,7 +34,7 @@ LIBFT := $(LIBFT_DIR)/libft.a
 MLX   := $(MLX_DIR)/libmlx42.a
 GLFW  := MLX42/build/_deps/glfw-build/src/libglfw3.a
 
-FILES :=	main.c					\
+FILES :=	main_test_with_render.c					\
 			render/render.c			\
 			render/draw_minimap.c	\
 			render/draw_player.c	\
@@ -43,12 +43,12 @@ FILES :=	main.c					\
 			render/update_pl_pos.c	\
 			render/draw_ray.c		\
 			utils/utils.c			\
-			parser/parser.c		 \
-			parser/parser_meta.c \
-			parser/parser_map.c	 \
-			parser/parser_color.c \
-			parser/parser_walls.c \
-			parser/file_utils.c	 \
+			parser/parser.c			\
+			parser/parser_meta.c	\
+			parser/parser_map.c		\
+			parser/parser_color.c	\
+			parser/parser_walls.c	\
+			parser/file_utils.c		\
 			parser/free_utils.c
 
 
