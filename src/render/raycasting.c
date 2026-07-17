@@ -12,7 +12,7 @@
 
 #include "cub3d.h"
 
-static double	cast_one_ray(double pos_x, double pos_y, t_dbl_coord ray_dir);
+static double	cast_one_ray(t_map *map, double pos_x, double pos_y, t_dbl_coord ray_dir);
 static void	raycasting_calc(t_casting_ray *casting_ray);
 static t_casting_ray	calc_casting_info(double pos_x, double pos_y, t_dbl_coord ray_dir);
 static void	calc_step_and_side(t_casting_ray *casting_ray, double pos_x, double pos_y, t_dbl_coord ray_dir);
@@ -36,13 +36,13 @@ void	cast_rays(t_game *game)
 		ray.dir_coord.x = cos(ray.angle);
 		ray.dir_coord.y = sin(ray.angle);
 
-		ray.perp_dist = cast_one_ray(pl.x, pl.y, ray.dir_coord);
+		ray.perp_dist = cast_one_ray(&game->map, pl.x, pl.y, ray.dir_coord);
 		draw_ray(game, pl, ray.dir_coord, ray.perp_dist);
 		i++;
 	}
 }
 
-static double	cast_one_ray(double pos_x, double pos_y, t_dbl_coord ray_dir)
+static double	cast_one_ray(t_map *map, double pos_x, double pos_y, t_dbl_coord ray_dir)
 {
 	t_casting_ray	casting_ray;
 	double			perp_dist;
@@ -53,7 +53,7 @@ static double	cast_one_ray(double pos_x, double pos_y, t_dbl_coord ray_dir)
 	while (1)
 	{
 		raycasting_calc(&casting_ray);
-		if (gridmap[casting_ray.map_pos.y][casting_ray.map_pos.x] == 1)
+		if (map->grid[casting_ray.map_pos.y][casting_ray.map_pos.x] == '1')
 			break;
 	}
 	if (casting_ray.side == 0)

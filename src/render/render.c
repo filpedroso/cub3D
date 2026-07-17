@@ -12,8 +12,7 @@
 
 #include "cub3d.h"
 
-static void	set_player_position(mlx_instance_t *player_instance);
-void		on_update(void *param);
+void	on_update(void *param);
 
 void	run_minimap_mode(t_game *game)
 {
@@ -22,7 +21,8 @@ void	run_minimap_mode(t_game *game)
 		handle_error(ERR_MLX);
 		return;
 	}
-	set_player_position(game->player_img->instances);
+	game->player_img->instances[0].x = game->player.x * SQUARE_SZ;
+	game->player_img->instances[0].y = game->player.y * SQUARE_SZ;
 	mlx_loop_hook(game->mlx, on_update, game);
 	mlx_loop(game->mlx);
 	mlx_terminate(game->mlx);
@@ -38,28 +38,4 @@ void	on_update(void *param)
 	draw_minimap(game);
 	draw_player(game);
 	cast_rays(game);
-}
-
-static void	set_player_position(mlx_instance_t *player_instance)
-{
-	uint32_t	i;
-	uint32_t	j;
-
-	i = 0;
-	while (i < MAP_H)
-	{
-		j = 0;
-		while (j < MAP_W)
-		{
-			if (gridmap[i][j] == 2)
-			{
-				player_instance[0].y = i * SQUARE_SZ;
-				player_instance[0].x = j * SQUARE_SZ;
-				return ;
-			}
-			j++;
-		}
-		i++;
-	}
-	return ;
 }

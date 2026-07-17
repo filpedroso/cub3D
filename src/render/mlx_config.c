@@ -38,7 +38,8 @@ bool	config_mlx(t_game *game)
 
 static bool	initiate_mlx(t_game *game)
 {
-	game->mlx = mlx_init(SCR_W, SCR_H, "minimap", true);
+	game->mlx = mlx_init((int32_t)(game->map.cols * SQUARE_SZ),
+			(int32_t)(game->map.rows * SQUARE_SZ), "minimap", true);
 	if (!game->mlx)
 	{
 		puts(mlx_strerror(mlx_errno));
@@ -49,7 +50,9 @@ static bool	initiate_mlx(t_game *game)
 
 static bool	add_map_img(t_game *game)
 {
-	game->map_img = mlx_new_image(game->mlx, MAP_PX_W, MAP_PX_H);
+	game->map_img = mlx_new_image(game->mlx,
+			(uint32_t)(game->map.cols * SQUARE_SZ),
+			(uint32_t)(game->map.rows * SQUARE_SZ));
 	if (!game->map_img)
 	{
 		puts(mlx_strerror(mlx_errno));

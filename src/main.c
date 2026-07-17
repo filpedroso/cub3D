@@ -12,63 +12,31 @@
 
 #include "cub3d.h"
 
-int	gridmap[MAP_H][MAP_W] =
-    {
-        {1,1,1,1,1,1,1,1,1,1},
-        {1,0,0,0,0,0,0,0,0,1},
-        {1,0,0,1,0,0,1,1,0,1},
-        {1,0,0,0,0,1,1,1,0,1},
-        {1,0,0,0,0,0,0,0,0,1},
-        {1,0,1,0,0,0,0,0,0,1},
-        {1,0,0,0,2,0,1,1,0,1},
-        {1,0,0,0,0,0,1,1,0,1},
-        {1,0,0,0,0,0,0,0,0,1},
-        {1,1,1,1,1,1,1,1,1,1}
-    };
-
-int	main(void)
+static float	dir_to_angle(char dir)
 {
-	t_game	game;
-
-	ft_memset(&game, 0, sizeof(game));
-	run_minimap_mode(&game);
+	if (dir == 'E')
+		return (0.0f);
+	if (dir == 'S')
+		return (90.0f);
+	if (dir == 'W')
+		return (180.0f);
+	return (270.0f);
 }
 
-
-
-
-/* t_game	mock_game_data(void)
+int	main(int argc, char **argv)
 {
 	t_game	game;
-	int		i;
-	int		j;
 
 	ft_memset(&game, 0, sizeof(game));
-	game.map.rows = MAP_H;
-	game.map.cols = MAP_W;
-	game.map.grid = malloc(sizeof(char *) * (MAP_H + 1));
-	if (!game.map.grid)
-		return (game);
-	for (i = 0; i < MAP_H; i++)
+	if (argc != 2)
 	{
-		game.map.grid[i] = malloc(sizeof(char) * (MAP_W + 1));
-		if (!game.map.grid[i])
-			return (game);
-		for (j = 0; j < MAP_W; j++)
-		{
-			if (gridmap[i][j] == 1)
-				game.map.grid[i][j] = '1';
-			else
-				game.map.grid[i][j] = '0';
-		}
-		game.map.grid[i][MAP_W] = '\0';
+		handle_error(ERR_ARGS);
+		return (ERROR);
 	}
-	game.map.grid[MAP_H] = NULL;
-
-	game.player.x = 1.5;
-	game.player.y = 1.5;
-	
-	game.player.dir = 'N';
-	game.map.grid[(int)game.player.y][(int)game.player.x] = game.player.dir;
-	return (game);
-} */
+	if (parse_cub(argv[1], &game) != ERR_NONE)
+		return (ERROR);
+	game.player.dir_ang = dir_to_angle(game.player.dir);
+	run_minimap_mode(&game);
+	free_game(&game);
+	return (SUCCESS);
+}
