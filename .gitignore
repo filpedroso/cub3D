@@ -25,6 +25,7 @@ obj/
 *.log
 valgrind-out.txt
 
+
 # Test files
 tester/
 temp_*

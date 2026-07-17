@@ -92,39 +92,53 @@ int	find_player(char **map, t_player *player)
 		}
 		i++;
 	}
-	return (handle_error(ERR_MAP_PLAYER));
+	return (ERR_MAP_PLAYER);
 }
 
 /**
- * @brief Reads the map grid from the file descriptor and populates t_map.
+ * @brief Updates map->cols if line is longer than the current max.
  *
- * Starts with first_map_line (already read by parse_meta) and continues
- * reading with get_next_line until EOF. Builds the grid dynamically
- * using ft_append_line, then runs validation steps.
+ * Tracks the length of the longest row seen so far, since map rows
+ * may have different lengths (ragged grid).
+ *
+ * @param map  Pointer to t_map whose cols field will be updated.
+ * @param line The row to measure.
+ */
+static void	update_max_cols(t_map *map, const char *line)
+{
+	int	len;
+
+	len = (int)ft_strlen(line);
+	if (len > map->cols)
+		map->cols = len;
+}
+
+/**
+ * @brief Reads all map lines from the fd and builds the char** grid.
+ *
+ * Starts with first_map_line (already read by parse_meta) and
+ * continues reading with get_next_line until EOF, appending each
+ * trimmed line to map->grid via ft_append_line. Tracks map->cols
+ * as the length of the longest row along the way.
  *
  * @param fd             Open file descriptor positioned after metadata.
  * @param map            Pointer to t_map to be populated.
  * @param first_map_line First map line already consumed by parse_meta.
- * @param player         Pointer to t_player to be populated via find_player.
  *
- * @return ERR_NONE on success, or an error code on failure:
- * @retval ERR_MALLOC     If ft_append_line fails to allocate memory.
- * @retval ERR_MAP_CHARS  If the grid contains invalid characters.
- * @retval ERR_MAP_PLAYER If no valid player spawn is found.
- *
- * TODO: add map->cols calculation (longest row).
- * TODO: add has_closed_walls validation -> ERR_MAP_OPEN.
+ * @return ERR_NONE on success, or ERR_MALLOC if ft_append_line fails.
  */
-int	parse_map_grid(int fd, t_map *map, char *first_map_line, t_player *player)
+static int	build_map_grid(int fd, t_map *map, char *first_map_line)
 {
 	char	*line;
 	int		count;
 
 	line = first_map_line;
 	count = 0;
+	map->cols = 0;
 	while (line)
 	{
 		trim_newline(line);
+		update_max_cols(map, line);
 		map->grid = ft_append_line(map->grid, line, count);
 		if (!map->grid)
 		{
@@ -136,8 +150,37 @@ int	parse_map_grid(int fd, t_map *map, char *first_map_line, t_player *player)
 		line = get_next_line(fd);
 	}
 	map->rows = count;
+	return (ERR_NONE);
+}
+
+/**
+ * @brief Reads the map grid from the file descriptor and populates t_map.
+ *
+ * Delegates line reading to build_map_grid, then runs the validation
+ * pipeline in order: character validity, wall closure, player spawn.
+ *
+ * @param fd             Open file descriptor positioned after metadata.
+ * @param map            Pointer to t_map to be populated.
+ * @param first_map_line First map line already consumed by parse_meta.
+ * @param player         Pointer to t_player to be populated via find_player.
+ *
+ * @return ERR_NONE on success, or an error code on failure:
+ * @retval ERR_MALLOC     If build_map_grid fails to allocate memory.
+ * @retval ERR_MAP_CHARS  If the grid contains invalid characters.
+ * @retval ERR_MAP_OPEN   If the map is not fully closed by walls.
+ * @retval ERR_MAP_PLAYER If no valid player spawn is found.
+ */
+int	parse_map_grid(int fd, t_map *map, char *first_map_line, t_player *player)
+{
+	int	err;
+
+	err = build_map_grid(fd, map, first_map_line);
+	if (err != ERR_NONE)
+		return (err);
 	if (!has_only_valid_chars(map->grid))
 		return (handle_error(ERR_MAP_CHARS));
+	if (!has_closed_walls(map->grid, map->rows))
+		return (handle_error(ERR_MAP_OPEN));
 	if (find_player(map->grid, player) != ERR_NONE)
 		return (handle_error(ERR_MAP_PLAYER));
 	return (ERR_NONE);
