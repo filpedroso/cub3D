@@ -53,7 +53,9 @@ static double	cast_one_ray(t_map *map, double pos_x, double pos_y, t_dbl_coord r
 	while (1)
 	{
 		raycasting_calc(&casting_ray);
-		if (map->grid[casting_ray.map_pos.y][casting_ray.map_pos.x] == '1')
+		if (casting_ray.map_pos.y < 0 || casting_ray.map_pos.y >= map->rows
+			|| casting_ray.map_pos.x < 0 || casting_ray.map_pos.x >= map->cols
+			|| map->grid[casting_ray.map_pos.y][casting_ray.map_pos.x] == '1')
 			break;
 	}
 	if (casting_ray.side == 0)

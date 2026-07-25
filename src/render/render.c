@@ -14,7 +14,7 @@
 
 void	on_update(void *param);
 
-void	run_minimap_mode(t_game *game)
+void	render(t_game *game)
 {
 	if (!config_mlx(game))
 	{

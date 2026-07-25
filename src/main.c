@@ -6,7 +6,7 @@
 /*   By: fpedroso <fpedroso@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/30 14:25:43 by fpedroso          #+#    #+#             */
-/*   Updated: 2026/06/01 14:36:44 by fpedroso         ###   ########.fr       */
+/*   Updated: 2026/07/25 16:52:21 by fpedroso         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,7 @@ int	main(int argc, char **argv)
 	if (parse_cub(argv[1], &game) != ERR_NONE)
 		return (ERROR);
 	game.player.dir_ang = dir_to_angle(game.player.dir);
-	run_minimap_mode(&game);
+	render(&game);
 	free_game(&game);
 	return (SUCCESS);
 }

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   cub3d.h                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mona <mona@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: fpedroso <fpedroso@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/21 00:00:00 by mona              #+#    #+#             */
-/*   Updated: 2026/06/07 23:01:16 by mona             ###   ########.fr       */
+/*   Updated: 2026/07/25 16:52:21 by fpedroso         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -181,7 +181,7 @@ int		find_player(char **map, t_player *player);
 /* ========================================================================== */
 /*                                RENDERING                                   */
 /* ========================================================================== */
-void	run_minimap_mode(t_game *game);
+void	render(t_game *game);
 void	draw_minimap(t_game *game);
 void	draw_player(void* param);
 void	update_pl_position(t_game *game);

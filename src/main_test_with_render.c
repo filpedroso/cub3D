@@ -6,7 +6,7 @@
 /*   By: fpedroso <fpedroso@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/14 22:07:43 by fpedroso          #+#    #+#             */
-/*   Updated: 2026/07/14 22:07:43 by fpedroso         ###   ########.fr       */
+/*   Updated: 2026/07/25 16:52:21 by fpedroso         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,7 +82,7 @@ int	main(int argc, char **argv)
 	printf("grid[player->y][player->x] = '%c' (esperado: '0')\n",
 		game.map.grid[(int)game.player.y][(int)game.player.x]);
 	printf("\nTudo certo! O parser esta funcionando.\n\n");
-	run_minimap_mode(&game);
+	render(&game);
 	free_game(&game);
 	return (SUCCESS);
 }
