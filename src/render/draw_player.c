@@ -6,7 +6,7 @@
 /*   By: fpedroso <fpedroso@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/06/13 15:49:44 by fpedroso          #+#    #+#             */
-/*   Updated: 2026/06/16 18:42:10 by fpedroso         ###   ########.fr       */
+/*   Updated: 2026/07/25 18:57:01 by fpedroso         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,6 @@ void	draw_player(void* param)
 	t_game	*game;
 
 	game = (t_game *)param;
-	update_pl_position(game);
 	redraw(game);
 }
 

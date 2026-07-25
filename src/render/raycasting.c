@@ -6,7 +6,7 @@
 /*   By: fpedroso <fpedroso@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/06/13 18:31:05 by fpedroso          #+#    #+#             */
-/*   Updated: 2026/06/13 18:31:05 by fpedroso         ###   ########.fr       */
+/*   Updated: 2026/07/25 18:57:03 by fpedroso         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,9 +25,8 @@ void	cast_rays(t_game *game)
 	int			i;
 
 	pl_view_ang = (double)game->player.dir_ang * (M_PI / 180.0);
-	// faz virar float no plano matematico (e nao em pixels)
-	pl.x = (double)(game->player_img->instances[0].x + CIRCLE_R) / SQUARE_SZ;
-	pl.y = (double)(game->player_img->instances[0].y + CIRCLE_R) / SQUARE_SZ;
+	pl.x = game->player.x;
+	pl.y = game->player.y;
 	i = 0;
 	while (i < SCR_W)
 	{

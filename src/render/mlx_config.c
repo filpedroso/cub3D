@@ -6,7 +6,7 @@
 /*   By: fpedroso <fpedroso@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/06/10 22:11:25 by fpedroso          #+#    #+#             */
-/*   Updated: 2026/06/10 22:11:25 by fpedroso         ###   ########.fr       */
+/*   Updated: 2026/07/25 18:56:57 by fpedroso         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,8 @@ static bool	add_player_img(t_game *game);
 
 bool	config_mlx(t_game *game)
 {
+	game->render_state.show_minimap = true;
+	game->render_state.show_rays = false;
 	if (!initiate_mlx(game))
 		return (false);
 
@@ -38,8 +40,7 @@ bool	config_mlx(t_game *game)
 
 static bool	initiate_mlx(t_game *game)
 {
-	game->mlx = mlx_init((int32_t)(game->map.cols * SQUARE_SZ),
-			(int32_t)(game->map.rows * SQUARE_SZ), "minimap", true);
+	game->mlx = mlx_init(SCR_W, SCR_H, "cub3D", true);
 	if (!game->mlx)
 	{
 		puts(mlx_strerror(mlx_errno));
@@ -51,14 +52,14 @@ static bool	initiate_mlx(t_game *game)
 static bool	add_map_img(t_game *game)
 {
 	game->map_img = mlx_new_image(game->mlx,
-			(uint32_t)(game->map.cols * SQUARE_SZ),
-			(uint32_t)(game->map.rows * SQUARE_SZ));
+			(uint32_t)(SCR_W * 0.25),
+			(uint32_t)(SCR_H * 0.25));
 	if (!game->map_img)
 	{
 		puts(mlx_strerror(mlx_errno));
 		return (false);
 	}
-	if (mlx_image_to_window(game->mlx, game->map_img, 0, 0) == -1)
+	if (mlx_image_to_window(game->mlx, game->map_img, 0, SCR_H - game->map_img->height) == -1)
 	{
 		puts(mlx_strerror(mlx_errno));
 		return (false);
@@ -74,7 +75,7 @@ static bool	add_player_img(t_game *game)
 		puts(mlx_strerror(mlx_errno));
 		return (false);
 	}
-	if (mlx_image_to_window(game->mlx, game->player_img, 0, 0) == -1)
+	if (mlx_image_to_window(game->mlx, game->player_img, 0, SCR_H - game->map_img->height) == -1)
 	{
 		puts(mlx_strerror(mlx_errno));
 		return (false);
