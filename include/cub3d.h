@@ -6,7 +6,7 @@
 /*   By: fpedroso <fpedroso@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/21 00:00:00 by mona              #+#    #+#             */
-/*   Updated: 2026/07/25 18:56:10 by fpedroso         ###   ########.fr       */
+/*   Updated: 2026/07/25 21:08:20 by fpedroso         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,7 @@
 # define SCR_W 500
 # define SCR_H 500
 
-# define SQUARE_SZ 40.0
+# define TILE_SZ 40.0
 
 # define BLUE	0x0000FFFF
 # define RED	0xFF0000FF
@@ -50,7 +50,7 @@
 # define MVMT_INCR 5.0
 # define PAN_INCR 3.0
 
-# define MINIMAP_SCALE 3
+# define MINIMAP_SCALE 0.25
 
 /* ========================================================================== */
 /*                                   ENUMS                                    */
@@ -127,18 +127,15 @@ typedef struct s_point
 	uint32_t	y;
 }	t_point;
 
-typedef struct s_render_state
-{
-	bool	show_minimap;
-	bool	show_rays;
-}	t_render_state;
-
 typedef struct s_game
 {
-	mlx_t			*mlx;
-	mlx_image_t		*map_img;
-	mlx_image_t		*player_img;
-	t_render_state	render_state;
+	mlx_t		*mlx;
+	mlx_image_t	*map_img;
+	mlx_image_t	*main_img;
+	uint8_t		*map_pixels_buf;
+	t_ray		rays[SCR_W];
+	bool		show_minimap;
+	bool		show_rays;
 	t_map		map;
 	t_config	config;
 	t_player	player;
@@ -194,7 +191,6 @@ void	render(t_game *game);
 void	draw_minimap(t_game *game);
 void	draw_player(void* param);
 void	update_pl_position(t_game *game);
-double	minimap_scale(t_game *game);
 
 
 

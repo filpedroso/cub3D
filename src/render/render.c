@@ -12,18 +12,20 @@
 
 #include "cub3d.h"
 
-void	on_update(void *param);
-static void	refresh_player_sprite(t_game *game);
-static void	handle_view_toggles(t_game *game);
-static void	sync_view_visibility(t_game *game);
+static void	load_minimap(t_game *game);
+void		on_update(void *param);
+static bool	is_in_tile(t_game *game, int px_x, int px_y);
 
 void	render(t_game *game)
 {
+	game->show_minimap = false;
+	game->show_rays = false;
 	if (!config_mlx(game))
 	{
 		handle_error(ERR_MLX);
 		return;
 	}
+	load_minimap(game);
 	mlx_loop_hook(game->mlx, on_update, game);
 	mlx_loop(game->mlx);
 	mlx_terminate(game->mlx);
@@ -34,51 +36,42 @@ void	on_update(void *param)
 	t_game	*game;
 
 	game = (t_game *)param;
-	handle_view_toggles(game);
-	sync_view_visibility(game);
-	if (mlx_is_key_down(game->mlx, MLX_KEY_ESCAPE))
-		mlx_close_window(game->mlx);
-	update_pl_position(game);
-	refresh_player_sprite(game);
-	if (game->render_state.show_minimap)
+	compute(game);
+	draw(game);
+}
+
+static void	load_minimap(t_game *game)
+{
+	uint32_t	px_y;
+	uint32_t	px_x;
+
+	px_y = 0;
+	while (px_y < game->map_img->height)
 	{
-		draw_minimap(game);
-		draw_player(game);
-		if (game->render_state.show_rays)
-			cast_rays(game);
+		px_x = 0;
+		while (px_x < game->map_img->width)
+		{
+			if (is_in_tile(game, px_x, px_y))
+				mlx_put_pixel(game->map_img, px_x, px_y, BLUE);
+			px_x++;
+		}
+		px_y++;
 	}
+	ft_memcpy(game->map_pixels_buf, game->map_img->pixels,
+		game->map_img->width * game->map_img->height * sizeof(uint32_t));
 }
 
-static void	refresh_player_sprite(t_game *game)
+static bool	is_in_tile(t_game *game, int px_x, int px_y)
 {
-	double	scale;
-	double	offset_y;
+	uint32_t	col;
+	uint32_t	row;
 
-	scale = minimap_scale(game);
-	offset_y = (double)SCR_H - game->map_img->height;
-	game->player_img->instances[0].x = (game->player.x * scale) - CIRCLE_R;
-	game->player_img->instances[0].y = offset_y + (game->player.y * scale) - CIRCLE_R;
+	col = px_x / TILE_SZ;
+	row = px_y / TILE_SZ;
+	if (col >= (uint32_t)game->map.cols || row >= (uint32_t)game->map.rows)
+		return (false);
+	if (col >= ft_strlen(game->map.grid[row]))
+		return (false);
+	return (game->map.grid[row][col] == '1');
 }
 
-static void	handle_view_toggles(t_game *game)
-{
-	static bool	prev_minimap;
-	static bool	prev_rays;
-	bool		minimap_pressed;
-	bool		rays_pressed;
-
-	minimap_pressed = mlx_is_key_down(game->mlx, MLX_KEY_M);
-	rays_pressed = mlx_is_key_down(game->mlx, MLX_KEY_R);
-	if (minimap_pressed && !prev_minimap)
-		game->render_state.show_minimap = !game->render_state.show_minimap;
-	if (rays_pressed && !prev_rays)
-		game->render_state.show_rays = !game->render_state.show_rays;
-	prev_minimap = minimap_pressed;
-	prev_rays = rays_pressed;
-}
-
-static void	sync_view_visibility(t_game *game)
-{
-	game->map_img->enabled = game->render_state.show_minimap;
-	game->player_img->enabled = game->render_state.show_minimap;
-}

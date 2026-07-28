@@ -6,7 +6,7 @@
 /*   By: fpedroso <fpedroso@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/06/16 19:05:40 by fpedroso          #+#    #+#             */
-/*   Updated: 2026/07/25 18:57:02 by fpedroso         ###   ########.fr       */
+/*   Updated: 2026/07/25 21:08:20 by fpedroso         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,8 +45,8 @@ void	walk(t_game *game, char dir)
 		dx_px = -dx_px;
 		dy_px = -dy_px;
 	}
-	dx = (double)dx_px / SQUARE_SZ;
-	dy = (double)dy_px / SQUARE_SZ;
+	dx = (double)dx_px / TILE_SZ;
+	dy = (double)dy_px / TILE_SZ;
 	if (!will_collide(game, dx_px, 0))
 		game->player.x += dx;
 	if (!will_collide(game, 0, dy_px))
@@ -66,12 +66,12 @@ static bool	will_collide(t_game *game, int32_t x_incr, int32_t y_incr)
 	t_int_coord	pl;
 	t_int_dir	dir;
 
-	pl.x = (int32_t)(game->player.x * SQUARE_SZ) + x_incr;
-	pl.y = (int32_t)(game->player.y * SQUARE_SZ) + y_incr;
-	dir.left = pl.x / (int32_t)SQUARE_SZ;
-	dir.right = (pl.x + (int32_t)CIRCLE_DIAM - 1) / (int32_t)SQUARE_SZ;
-	dir.up = pl.y / (int32_t)SQUARE_SZ;
-	dir.down = (pl.y + (int32_t)CIRCLE_DIAM - 1) / (int32_t)SQUARE_SZ;
+	pl.x = (int32_t)(game->player.x * TILE_SZ) + x_incr;
+	pl.y = (int32_t)(game->player.y * TILE_SZ) + y_incr;
+	dir.left = pl.x / (int32_t)TILE_SZ;
+	dir.right = (pl.x + (int32_t)CIRCLE_DIAM - 1) / (int32_t)TILE_SZ;
+	dir.up = pl.y / (int32_t)TILE_SZ;
+	dir.down = (pl.y + (int32_t)CIRCLE_DIAM - 1) / (int32_t)TILE_SZ;
 	if (dir.left < 0 || dir.right >= game->map.cols
 		|| dir.up < 0 || dir.down >= game->map.rows)
 		return (true);

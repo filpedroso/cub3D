@@ -6,7 +6,7 @@
 /*   By: fpedroso <fpedroso@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/06/16 19:41:28 by fpedroso          #+#    #+#             */
-/*   Updated: 2026/06/16 19:41:28 by fpedroso         ###   ########.fr       */
+/*   Updated: 2026/07/25 21:08:20 by fpedroso         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,10 +41,10 @@ static t_canvas_ray	prep_drawing_ray(t_player pl, t_dbl_coord ray_dir, double pe
 {
 	t_canvas_ray	drawing_ray;
 	
-	drawing_ray.start.x = pl.x * SQUARE_SZ;
-	drawing_ray.start.y = pl.y * SQUARE_SZ;
-	drawing_ray.end.x = drawing_ray.start.x + ray_dir.x * perp_dist * SQUARE_SZ;
-	drawing_ray.end.y = drawing_ray.start.y + ray_dir.y * perp_dist * SQUARE_SZ;
+	drawing_ray.start.x = pl.x * TILE_SZ;
+	drawing_ray.start.y = pl.y * TILE_SZ;
+	drawing_ray.end.x = drawing_ray.start.x + ray_dir.x * perp_dist * TILE_SZ;
+	drawing_ray.end.y = drawing_ray.start.y + ray_dir.y * perp_dist * TILE_SZ;
 	drawing_ray.diff.x = drawing_ray.end.x - drawing_ray.start.x;
 	drawing_ray.diff.y = drawing_ray.end.y - drawing_ray.start.y;
 	drawing_ray.current = drawing_ray.start;

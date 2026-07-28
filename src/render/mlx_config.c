@@ -18,23 +18,18 @@ static bool	add_player_img(t_game *game);
 
 bool	config_mlx(t_game *game)
 {
-	game->render_state.show_minimap = true;
-	game->render_state.show_rays = false;
 	if (!initiate_mlx(game))
 		return (false);
-
+	if (!add_main_img(game))
+	{
+		mlx_terminate(game->mlx);
+		return (false);
+	}
 	if (!add_map_img(game))
 	{
 		mlx_terminate(game->mlx);
 		return (false);
 	}
-
-	if (!add_player_img(game))
-	{
-		mlx_terminate(game->mlx);
-		return (false);
-	}
-
 	return (true);
 }
 
@@ -49,11 +44,30 @@ static bool	initiate_mlx(t_game *game)
 	return (true);
 }
 
+static bool	add_main_img(t_game *game)
+{
+	game->main_img = mlx_new_image(game->mlx, SCR_W, SCR_H);
+	if (!game->main_img)
+	{
+		puts(mlx_strerror(mlx_errno));
+		return (false);
+	}
+	if (mlx_image_to_window(game->mlx, game->main_img, 0, 0) == -1)
+	{
+		puts(mlx_strerror(mlx_errno));
+		return (false);
+	}
+	return (true);
+}
+
 static bool	add_map_img(t_game *game)
 {
-	game->map_img = mlx_new_image(game->mlx,
-			(uint32_t)(SCR_W * 0.25),
-			(uint32_t)(SCR_H * 0.25));
+	uint32_t	width;
+	uint32_t	height;
+
+	width = roundf(SCR_W * MINIMAP_SCALE);
+	height = roundf(SCR_H * MINIMAP_SCALE);
+	game->map_img = mlx_new_image(game->mlx, width, height);
 	if (!game->map_img)
 	{
 		puts(mlx_strerror(mlx_errno));
@@ -64,20 +78,10 @@ static bool	add_map_img(t_game *game)
 		puts(mlx_strerror(mlx_errno));
 		return (false);
 	}
-	return (true);
-}
-
-static bool	add_player_img(t_game *game)
-{
-	game->player_img = mlx_new_image(game->mlx, CIRCLE_DIAM, CIRCLE_DIAM);
-	if (!game->player_img)
+	game->map_pixels_buf = malloc((size_t)width * (size_t)height * sizeof(uint32_t));
+	if (!game->map_pixels_buf)
 	{
-		puts(mlx_strerror(mlx_errno));
-		return (false);
-	}
-	if (mlx_image_to_window(game->mlx, game->player_img, 0, SCR_H - game->map_img->height) == -1)
-	{
-		puts(mlx_strerror(mlx_errno));
+		perror("Malloc");
 		return (false);
 	}
 	return (true);

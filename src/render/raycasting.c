@@ -12,10 +12,10 @@
 
 #include "cub3d.h"
 
-static double	cast_one_ray(t_map *map, double pos_x, double pos_y, t_dbl_coord ray_dir);
-static void	raycasting_calc(t_casting_ray *casting_ray);
+static double			cast_one_ray(t_map *map, double pos_x, double pos_y, t_dbl_coord ray_dir);
+static void				raycasting_calc(t_casting_ray *casting_ray);
 static t_casting_ray	calc_casting_info(double pos_x, double pos_y, t_dbl_coord ray_dir);
-static void	calc_step_and_side(t_casting_ray *casting_ray, double pos_x, double pos_y, t_dbl_coord ray_dir);
+static void				calc_step_and_side(t_casting_ray *casting_ray, double pos_x, double pos_y, t_dbl_coord ray_dir);
 
 void	cast_rays(t_game *game)
 {
@@ -31,12 +31,10 @@ void	cast_rays(t_game *game)
 	while (i < SCR_W)
 	{
 		ray.angle = pl_view_ang - HALF_FOV + (i * FOV / SCR_W);
-
 		ray.dir_coord.x = cos(ray.angle);
 		ray.dir_coord.y = sin(ray.angle);
-
 		ray.perp_dist = cast_one_ray(&game->map, pl.x, pl.y, ray.dir_coord);
-		draw_ray(game, pl, ray.dir_coord, ray.perp_dist);
+		game->rays[i] = ray;
 		i++;
 	}
 }
@@ -48,10 +46,9 @@ static double	cast_one_ray(t_map *map, double pos_x, double pos_y, t_dbl_coord r
 
 	casting_ray = calc_casting_info(pos_x, pos_y, ray_dir);
 	casting_ray.side = 0;
-
 	while (1)
 	{
-		raycasting_calc(&casting_ray);
+					(&casting_ray);
 		if (casting_ray.map_pos.y < 0 || casting_ray.map_pos.y >= map->rows
 			|| casting_ray.map_pos.x < 0 || casting_ray.map_pos.x >= map->cols
 			|| map->grid[casting_ray.map_pos.y][casting_ray.map_pos.x] == '1')
