@@ -37,7 +37,7 @@ void	on_update(void *param)
 
 	game = (t_game *)param;
 	compute(game);
-	draw(game);
+	draw_frame(game);
 }
 
 static void	load_minimap(t_game *game)

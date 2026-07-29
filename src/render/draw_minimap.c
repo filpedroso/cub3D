@@ -14,6 +14,7 @@
 
 static bool	belongs_in_circle(uint32_t y, uint32_t x);
 static void	draw_player(t_game *game);
+static void	draw_rays(t_game *game);
 
 void	draw_minimap(t_game *game)
 {
@@ -22,6 +23,22 @@ void	draw_minimap(t_game *game)
 	draw_player(game);
 	if (game->show_rays)
 		draw_rays(game);
+}
+
+static void	draw_rays(t_game *game)
+{
+	t_player	player;
+	t_ray		*rays;
+	int	i;
+
+	player = game->player;
+	rays = game->rays;
+	i = 0;
+	while (i < SCR_W)
+	{
+		draw_ray(game, player, rays[i].dir_coord, rays[i].perp_dist);
+		i++;
+	}
 }
 
 static void	draw_player(t_game *game)

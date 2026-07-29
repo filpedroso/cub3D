@@ -37,11 +37,12 @@ GLFW  := MLX42/build/_deps/glfw-build/src/libglfw3.a
 FILES :=	main_test_with_render.c					\
 			render/render.c			\
 			render/draw_minimap.c	\
-			render/draw_player.c	\
 			render/mlx_config.c		\
 			render/raycasting.c		\
 			render/update_pl_pos.c	\
 			render/draw_ray.c		\
+			render/draw_frame.c		\
+			render/compute.c		\
 			utils/utils.c			\
 			parser/parser.c			\
 			parser/parser_meta.c	\

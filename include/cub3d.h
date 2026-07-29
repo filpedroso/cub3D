@@ -127,6 +127,13 @@ typedef struct s_point
 	uint32_t	y;
 }	t_point;
 
+typedef struct s_ray
+{
+	double		angle;		// em radianos
+	double		perp_dist;
+	t_dbl_coord	dir_coord;
+}	t_ray;
+
 typedef struct s_game
 {
 	mlx_t		*mlx;
@@ -141,12 +148,6 @@ typedef struct s_game
 	t_player	player;
 }	t_game;
 
-typedef struct s_ray
-{
-	double		angle;		// em radianos
-	double		perp_dist;
-	t_dbl_coord	dir_coord;
-}	t_ray;
 
 typedef struct s_canvas_ray
 {
@@ -189,8 +190,9 @@ int		find_player(char **map, t_player *player);
 /* ========================================================================== */
 void	render(t_game *game);
 void	draw_minimap(t_game *game);
-void	draw_player(void* param);
 void	update_pl_position(t_game *game);
+void	draw_frame(t_game *game);
+void	compute(t_game *game);
 
 
 

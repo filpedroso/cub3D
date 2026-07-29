@@ -14,7 +14,7 @@
 
 static bool	initiate_mlx(t_game *game);
 static bool	add_map_img(t_game *game);
-static bool	add_player_img(t_game *game);
+static bool	add_main_img(t_game *game);
 
 bool	config_mlx(t_game *game)
 {
@@ -73,7 +73,7 @@ static bool	add_map_img(t_game *game)
 		puts(mlx_strerror(mlx_errno));
 		return (false);
 	}
-	if (mlx_image_to_window(game->mlx, game->map_img, 0, SCR_H - game->map_img->height) == -1)
+	if (mlx_image_to_window(game->mlx, game->map_img, 250, 250) == -1) // SCR_H - game->map_img->height) == -1)
 	{
 		puts(mlx_strerror(mlx_errno));
 		return (false);

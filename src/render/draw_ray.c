@@ -18,21 +18,24 @@ static t_canvas_ray	prep_drawing_ray(t_player pl, t_dbl_coord ray_dir,
 void	draw_ray(t_game *game, t_player pl, t_dbl_coord ray_dir,
 	double perp_dist)
 {
+	mlx_image_t		*map_img;
+	t_dbl_coord		current_ray;
 	t_canvas_ray	d_ray;
 	double			steps;
 	int				i;
 
 	d_ray = prep_drawing_ray(pl, ray_dir, perp_dist);
-
 	steps = fmax(fabs(d_ray.diff.x), fabs(d_ray.diff.y));
+	map_img = game->map_img;
 	i = 0;
+	current_ray = d_ray.current;
 	while (i <= (int)steps)
 	{
-		if (d_ray.current.x >= 0 && d_ray.current.x < game->map_img->width &&
-			d_ray.current.y >= 0 && d_ray.current.y < game->map_img->height)
-			mlx_put_pixel(game->map_img, (uint32_t)d_ray.current.x, (uint32_t)d_ray.current.y, PURPLE);
-		d_ray.current.x += d_ray.diff.x / steps;
-		d_ray.current.y += d_ray.diff.y / steps;
+		if (current_ray.x >= 0 && current_ray.x < map_img->width &&
+			current_ray.y >= 0 && current_ray.y < map_img->height)
+			mlx_put_pixel(map_img, (uint32_t)current_ray.x, (uint32_t)current_ray.y, PURPLE);
+		current_ray.x += d_ray.diff.x / steps;
+		current_ray.y += d_ray.diff.y / steps;
 		i++;
 	}
 }
