@@ -6,115 +6,127 @@
 /*   By: fpedroso <fpedroso@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/06/13 18:31:05 by fpedroso          #+#    #+#             */
-/*   Updated: 2026/07/25 18:57:03 by fpedroso         ###   ########.fr       */
+/*   Updated: 2026/07/28 12:00:00 by fpedroso         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "cub3d.h"
 
-static double			cast_one_ray(t_map *map, double pos_x, double pos_y, t_dbl_coord ray_dir);
-static void				raycasting_calc(t_casting_ray *casting_ray);
-static t_casting_ray	calc_casting_info(double pos_x, double pos_y, t_dbl_coord ray_dir);
-static void				calc_step_and_side(t_casting_ray *casting_ray, double pos_x, double pos_y, t_dbl_coord ray_dir);
+static void				cast_one_ray(t_game *game, t_ray *ray);
+static void				raycasting_calc(t_casting_ray *dda);
+static t_casting_ray	calc_casting_info(t_player *pl, t_dbl_coord ray_dir);
+static void				calc_step_and_side(t_casting_ray *dda, t_player *pl,
+							t_dbl_coord ray_dir);
 
+/*
+** Rotates the precomputed FOV fan onto the current view direction, so
+** the whole frame costs two trig calls instead of two per column.
+**
+** perp_dist is the fisheye correction. cast_one_ray works with a
+** normalised direction vector, so what it returns is the true
+** euclidean distance to the wall; feeding that straight into wall
+** heights would bow the walls outwards. The correction factor is
+** cos(ray angle - view angle), which is precisely cos_off.
+*/
 void	cast_rays(t_game *game)
 {
-	t_ray		ray;
-	t_player	pl;
-	double		pl_view_ang; // em radianos
-	int			i;
+	t_ray	*ray;
+	double	view;
+	double	cv;
+	double	sv;
+	int		i;
 
-	pl_view_ang = (double)game->player.dir_ang * (M_PI / 180.0);
-	pl.x = game->player.x;
-	pl.y = game->player.y;
+	view = (double)game->player.dir_ang * (M_PI / 180.0);
+	cv = cos(view);
+	sv = sin(view);
 	i = 0;
 	while (i < SCR_W)
 	{
-		ray.angle = pl_view_ang - HALF_FOV + (i * FOV / SCR_W);
-		ray.dir_coord.x = cos(ray.angle);
-		ray.dir_coord.y = sin(ray.angle);
-		ray.perp_dist = cast_one_ray(&game->map, pl.x, pl.y, ray.dir_coord);
-		game->rays[i] = ray;
+		ray = &game->rays[i];
+		ray->dir.x = cv * ray->cos_off - sv * ray->sin_off;
+		ray->dir.y = sv * ray->cos_off + cv * ray->sin_off;
+		cast_one_ray(game, ray);
+		ray->perp_dist = ray->hit_dist * ray->cos_off;
 		i++;
 	}
 }
 
-static double	cast_one_ray(t_map *map, double pos_x, double pos_y, t_dbl_coord ray_dir)
+static void	cast_one_ray(t_game *game, t_ray *ray)
 {
-	t_casting_ray	casting_ray;
-	double			perp_dist;
+	t_casting_ray	dda;
 
-	casting_ray = calc_casting_info(pos_x, pos_y, ray_dir);
-	casting_ray.side = 0;
+	dda = calc_casting_info(&game->player, ray->dir);
+	dda.side = 0;
 	while (1)
 	{
-		raycasting_calc(&casting_ray);
-		if (casting_ray.map_pos.y < 0 || casting_ray.map_pos.y >= map->rows
-			|| casting_ray.map_pos.x < 0 || casting_ray.map_pos.x >= map->cols
-			|| map->grid[casting_ray.map_pos.y][casting_ray.map_pos.x] == '1')
-			break;
+		raycasting_calc(&dda);
+		if (dda.map_pos.y < 0 || dda.map_pos.y >= game->map.rows
+			|| dda.map_pos.x < 0 || dda.map_pos.x >= game->map.cols
+			|| is_solid(game->map.grid[dda.map_pos.y][dda.map_pos.x]))
+			break ;
 	}
-	if (casting_ray.side == 0)
-		perp_dist = casting_ray.side_dist.x - casting_ray.delta_dist.x;
+	if (dda.side == 0)
+		ray->hit_dist = dda.side_dist.x - dda.delta_dist.x;
 	else
-		perp_dist = casting_ray.side_dist.y - casting_ray.delta_dist.y;
-	return (perp_dist);
+		ray->hit_dist = dda.side_dist.y - dda.delta_dist.y;
+	ray->side = dda.side;
 }
 
-static void	raycasting_calc(t_casting_ray *casting_ray)
+static void	raycasting_calc(t_casting_ray *dda)
 {
-	if (casting_ray->side_dist.x < casting_ray->side_dist.y)
+	if (dda->side_dist.x < dda->side_dist.y)
 	{
-		casting_ray->side_dist.x += casting_ray->delta_dist.x;
-		casting_ray->map_pos.x += casting_ray->step_dir.x;
-		casting_ray->side = 0;
+		dda->side_dist.x += dda->delta_dist.x;
+		dda->map_pos.x += dda->step_dir.x;
+		dda->side = 0;
 	}
 	else
 	{
-		casting_ray->side_dist.y += casting_ray->delta_dist.y;
-		casting_ray->map_pos.y += casting_ray->step_dir.y;
-		casting_ray->side = 1;
+		dda->side_dist.y += dda->delta_dist.y;
+		dda->map_pos.y += dda->step_dir.y;
+		dda->side = 1;
 	}
 }
 
-static t_casting_ray	calc_casting_info(double pos_x, double pos_y, t_dbl_coord ray_dir)
+static t_casting_ray	calc_casting_info(t_player *pl, t_dbl_coord ray_dir)
 {
-	t_casting_ray	casting_ray;
+	t_casting_ray	dda;
 
-	casting_ray.map_pos.x = (int)pos_x;
-	casting_ray.map_pos.y = (int)pos_y;
+	dda.map_pos.x = (int)pl->x;
+	dda.map_pos.y = (int)pl->y;
 	if (ray_dir.x == 0)
-		casting_ray.delta_dist.x = 1e30;
+		dda.delta_dist.x = 1e30;
 	else
-		casting_ray.delta_dist.x = fabs(1.0 / ray_dir.x);
+		dda.delta_dist.x = fabs(1.0 / ray_dir.x);
 	if (ray_dir.y == 0)
-		casting_ray.delta_dist.y = 1e30;
+		dda.delta_dist.y = 1e30;
 	else
-		casting_ray.delta_dist.y = fabs(1.0 / ray_dir.y);
-	calc_step_and_side(&casting_ray, pos_x, pos_y, ray_dir);
-	return (casting_ray);
+		dda.delta_dist.y = fabs(1.0 / ray_dir.y);
+	calc_step_and_side(&dda, pl, ray_dir);
+	return (dda);
 }
 
-static void	calc_step_and_side(t_casting_ray *casting_ray, double pos_x, double pos_y, t_dbl_coord ray_dir)
+static void	calc_step_and_side(t_casting_ray *dda, t_player *pl,
+	t_dbl_coord ray_dir)
 {
 	if (ray_dir.x < 0)
 	{
-		casting_ray->step_dir.x = -1;
-		casting_ray->side_dist.x = (pos_x - casting_ray->map_pos.x) * casting_ray->delta_dist.x;
+		dda->step_dir.x = -1;
+		dda->side_dist.x = (pl->x - dda->map_pos.x) * dda->delta_dist.x;
 	}
 	else
 	{
-		casting_ray->step_dir.x = 1;
-		casting_ray->side_dist.x = (casting_ray->map_pos.x + 1.0 - pos_x) * casting_ray->delta_dist.x;
+		dda->step_dir.x = 1;
+		dda->side_dist.x = (dda->map_pos.x + 1.0 - pl->x) * dda->delta_dist.x;
 	}
 	if (ray_dir.y < 0)
 	{
-		casting_ray->step_dir.y = -1;
-		casting_ray->side_dist.y = (pos_y - casting_ray->map_pos.y) * casting_ray->delta_dist.y;
+		dda->step_dir.y = -1;
+		dda->side_dist.y = (pl->y - dda->map_pos.y) * dda->delta_dist.y;
 	}
 	else
 	{
-		casting_ray->step_dir.y = 1;
-		casting_ray->side_dist.y = (casting_ray->map_pos.y + 1.0 - pos_y) * casting_ray->delta_dist.y;
+		dda->step_dir.y = 1;
+		dda->side_dist.y = (dda->map_pos.y + 1.0 - pl->y) * dda->delta_dist.y;
 	}
 }

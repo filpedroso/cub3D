@@ -34,8 +34,18 @@ LIBFT := $(LIBFT_DIR)/libft.a
 MLX   := $(MLX_DIR)/libmlx42.a
 GLFW  := MLX42/build/_deps/glfw-build/src/libglfw3.a
 
+# MLX42 links against the native window system, which differs per host.
+UNAME_S := $(shell uname -s)
+ifeq ($(UNAME_S),Darwin)
+    MLX_LINK := -framework Cocoa -framework OpenGL -framework IOKit
+else
+    MLX_LINK := -ldl -pthread -lm
+endif
+
 FILES :=	main_test_with_render.c					\
 			render/render.c			\
+			render/render_init.c	\
+			render/minimap_bake.c	\
 			render/draw_minimap.c	\
 			render/mlx_config.c		\
 			render/raycasting.c		\
@@ -47,6 +57,7 @@ FILES :=	main_test_with_render.c					\
 			parser/parser.c			\
 			parser/parser_meta.c	\
 			parser/parser_map.c		\
+			parser/parser_grid.c	\
 			parser/parser_color.c	\
 			parser/parser_walls.c	\
 			parser/file_utils.c		\
@@ -61,6 +72,7 @@ TEST_OBJS :=	$(OBJ_DIR)/main_test.o			 \
 				$(OBJ_DIR)/parser/parser.o		 \
 				$(OBJ_DIR)/parser/parser_meta.o \
 				$(OBJ_DIR)/parser/parser_map.o	 \
+				$(OBJ_DIR)/parser/parser_grid.o	 \
 				$(OBJ_DIR)/parser/parser_color.o \
 				$(OBJ_DIR)/parser/parser_walls.o \
 				$(OBJ_DIR)/parser/file_utils.o	 \
@@ -71,7 +83,7 @@ all: $(NAME)
 
 $(NAME): $(OBJ) $(LIBFT)
 	@$(CC) $(CFLAGS) $(OBJ) $(LIBFT) $(MLX) $(GLFW) \
-		-framework Cocoa -framework OpenGL -framework IOKit -o $(NAME)
+		$(MLX_LINK) -o $(NAME)
 	@$(MAKE) banner
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
@@ -83,7 +95,7 @@ $(LIBFT):
 
 test: $(TEST_OBJS) $(LIBFT)
 	@$(CC) $(CFLAGS) $(TEST_OBJS) $(LIBFT) $(MLX) $(GLFW) \
-		-framework Cocoa -framework OpenGL -framework IOKit -o $(TEST_NAME)
+		$(MLX_LINK) -o $(TEST_NAME)
 	@echo "$(GREEN)Parser test binary built: ./$(TEST_NAME) <map.cub>$(RESET)"
 
 clean:
