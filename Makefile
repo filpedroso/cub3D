@@ -32,7 +32,12 @@ MLX_DIR := MLX42/build
 
 LIBFT := $(LIBFT_DIR)/libft.a
 MLX   := $(MLX_DIR)/libmlx42.a
-GLFW  := MLX42/build/_deps/glfw-build/src/libglfw3.a
+
+# MLX42 gets GLFW either from its own CMake fetch or from a system install.
+# Deferred (=) so the check happens after $(MLX) has been built.
+GLFW_FETCHED := $(MLX_DIR)/_deps/glfw-build/src/libglfw3.a
+GLFW = $(if $(wildcard $(GLFW_FETCHED)),$(GLFW_FETCHED),\
+	$(shell pkg-config --libs glfw3 2>/dev/null || echo -lglfw))
 
 # MLX42 links against the native window system, which differs per host.
 UNAME_S := $(shell uname -s)
@@ -81,7 +86,7 @@ TEST_OBJS :=	$(OBJ_DIR)/main_test.o			 \
 
 all: $(NAME)
 
-$(NAME): $(OBJ) $(LIBFT)
+$(NAME): $(OBJ) $(LIBFT) $(MLX)
 	@$(CC) $(CFLAGS) $(OBJ) $(LIBFT) $(MLX) $(GLFW) \
 		$(MLX_LINK) -o $(NAME)
 	@$(MAKE) banner
@@ -93,7 +98,12 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 $(LIBFT):
 	@$(MAKE) -C $(LIBFT_DIR) --no-print-directory
 
-test: $(TEST_OBJS) $(LIBFT)
+$(MLX):
+	@echo "$(BLUE)Building MLX42...$(RESET)"
+	@cmake -S MLX42 -B $(MLX_DIR) -DBUILD_TESTS=OFF > /dev/null
+	@$(MAKE) -C $(MLX_DIR) --no-print-directory > /dev/null
+
+test: $(TEST_OBJS) $(LIBFT) $(MLX)
 	@$(CC) $(CFLAGS) $(TEST_OBJS) $(LIBFT) $(MLX) $(GLFW) \
 		$(MLX_LINK) -o $(TEST_NAME)
 	@echo "$(GREEN)Parser test binary built: ./$(TEST_NAME) <map.cub>$(RESET)"
