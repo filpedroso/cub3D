@@ -6,7 +6,7 @@
 /*   By: fpedroso <fpedroso@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/21 00:00:00 by mona              #+#    #+#             */
-/*   Updated: 2026/07/25 21:08:20 by fpedroso         ###   ########.fr       */
+/*   Updated: 2026/07/30 19:15:05 by fpedroso         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,30 +32,57 @@
 # define TRUE 1
 # define FALSE 0
 
-# define SCR_W 500
-# define SCR_H 500
-
 # define BLUE	0x0000FFFF
 # define RED	0xFF0000FF
 # define PURPLE	0xFF00FFFF
 # define BLACK	0xFFFAFAFA
 
-# define FOV       (60.0 * M_PI / 180.0)
-# define HALF_FOV  (30.0 * M_PI / 180.0)
+/* -------------------------------------------------------------------- */
+/*  TUNABLE. These are the knobs. Everything in the derived block below  */
+/*  follows from them, so changing one here is enough.                   */
+/* -------------------------------------------------------------------- */
 
-/* World space is measured in tiles. PL_RADIUS is the player's half-width
- * and drives both collision and the minimap dot, so what is drawn is
- * exactly the footprint that collides. */
+/* Window, in pixels. */
+# define SCR_W 1500
+# define SCR_H 600
+
+/* Camera aperture, in degrees. */
+# define FOV_DEG 60.0
+
+/* Player. World space is measured in tiles, so PL_RADIUS is a half-width
+ * in tiles and MOVE_SPEED is tiles per frame; PAN_INCR is degrees per
+ * frame. PL_RADIUS drives both collision and the minimap dot, so what is
+ * drawn is exactly the footprint that collides. */
 # define PL_RADIUS 0.25
-# define MOVE_SPEED 0.06
+# define MOVE_SPEED 0.02
 # define PAN_INCR 3.0
 
-/* Minimap image size, as a fraction of the window. MM_MARGIN is the
- * border kept clear inside it; MM_RAY_STEP thins the ray fan, which is
- * far denser than a 125px image can show. */
+/* Minimap. MINIMAP_SCALE is the largest fraction of the window it may
+ * occupy: the map is fitted inside that box preserving aspect ratio, and
+ * the resulting image is anchored flush into the bottom-left corner.
+ * MM_MARGIN insets the map from the image edge, so 0 puts the map hard
+ * against the window corner. MM_RAY_STEP thins the ray fan, which is far
+ * denser than a minimap can resolve. */
 # define MINIMAP_SCALE 0.25
-# define MM_MARGIN 2
-# define MM_RAY_STEP 8
+# define MM_MARGIN 0
+# define MM_RAY_STEP 10
+
+/* -------------------------------------------------------------------- */
+/*  DERIVED. Do not edit these; change the knobs above instead.          */
+/* -------------------------------------------------------------------- */
+
+# define FOV (FOV_DEG * M_PI / 180.0)
+# define HALF_FOV (FOV / 2.0)
+
+/* One ray per screen column. */
+# define RAY_COUNT SCR_W
+
+/* The box the minimap may not exceed, and the room left for the map
+ * itself once the margin is taken out of it. */
+# define MM_BOX_W ((double)SCR_W * MINIMAP_SCALE)
+# define MM_BOX_H ((double)SCR_H * MINIMAP_SCALE)
+# define MM_FIT_W (MM_BOX_W - 2 * MM_MARGIN)
+# define MM_FIT_H (MM_BOX_H - 2 * MM_MARGIN)
 
 /* ========================================================================== */
 /*                                   ENUMS                                    */
@@ -147,15 +174,18 @@ typedef struct s_ray
 	int			side;
 }	t_ray;
 
-/* Everything here is derived from the map dimensions at init and is
- * constant for the run: scale converts world tiles to minimap pixels,
- * off_x/off_y centre the map inside the image. */
+/* Fixed for the run, computed from the map dimensions before the images
+ * exist: scale converts world tiles to minimap pixels, width/height are
+ * the image size that fits the map at that scale, and off_x/off_y are
+ * where the map starts inside it. */
 typedef struct s_minimap
 {
-	double	scale;
-	double	off_x;
-	double	off_y;
-	double	radius;
+	double		scale;
+	double		off_x;
+	double		off_y;
+	double		radius;
+	uint32_t	width;
+	uint32_t	height;
 }	t_minimap;
 
 typedef struct s_game
@@ -164,7 +194,7 @@ typedef struct s_game
 	mlx_image_t	*map_img;
 	mlx_image_t	*main_img;
 	uint8_t		*map_pixels_buf;
-	t_ray		rays[SCR_W];
+	t_ray		rays[RAY_COUNT];
 	bool		show_minimap;
 	bool		show_rays;
 	t_map		map;
@@ -222,9 +252,9 @@ void	update_pl_position(t_game *game);
 /* ========================================================================== */
 /*                              RENDER INIT                                   */
 /* ========================================================================== */
+void		init_minimap_geometry(t_game *game);
 bool		init_render(t_game *game);
 void		init_fov_lut(t_game *game);
-bool		init_minimap(t_game *game);
 void		bake_minimap_bg(t_game *game);
 bool		is_in_tile(t_game *game, uint32_t px_x, uint32_t px_y);
 t_dbl_coord	tile_to_px(t_minimap *mm, t_dbl_coord tile);

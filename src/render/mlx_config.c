@@ -65,16 +65,17 @@ static bool	add_main_img(t_game *game)
 }
 
 /*
-** Anchored bottom-left. The contents are laid out later by
-** init_minimap, which owns the tile-to-pixel scale.
+** Sized and anchored from the geometry init_minimap_geometry already
+** worked out, so the image hugs the map exactly and its bottom-left
+** corner lands on the window's.
 */
 static bool	add_map_img(t_game *game)
 {
 	uint32_t	width;
 	uint32_t	height;
 
-	width = roundf(SCR_W * MINIMAP_SCALE);
-	height = roundf(SCR_H * MINIMAP_SCALE);
+	width = game->minimap.width;
+	height = game->minimap.height;
 	game->map_img = mlx_new_image(game->mlx, width, height);
 	if (!game->map_img)
 	{

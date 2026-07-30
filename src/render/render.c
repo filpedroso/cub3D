@@ -18,6 +18,7 @@ void	render(t_game *game)
 {
 	game->show_minimap = true;
 	game->show_rays = true;
+	init_minimap_geometry(game);
 	if (!config_mlx(game))
 	{
 		handle_error(ERR_MLX);

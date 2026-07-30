@@ -33,14 +33,14 @@ void	draw_minimap(t_game *game)
 /*
 ** One line per ray would be several hundred into an image barely a
 ** hundred pixels wide. MM_RAY_STEP thins the fan to what the minimap
-** can actually resolve; the 3D view still consumes all SCR_W rays.
+** can actually resolve; the 3D view still consumes all RAY_COUNT rays.
 */
 static void	draw_rays(t_game *game)
 {
 	int	i;
 
 	i = 0;
-	while (i < SCR_W)
+	while (i < RAY_COUNT)
 	{
 		draw_ray(game, i);
 		i += MM_RAY_STEP;

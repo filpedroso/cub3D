@@ -40,7 +40,7 @@ void	cast_rays(t_game *game)
 	cv = cos(view);
 	sv = sin(view);
 	i = 0;
-	while (i < SCR_W)
+	while (i < RAY_COUNT)
 	{
 		ray = &game->rays[i];
 		ray->dir.x = cv * ray->cos_off - sv * ray->sin_off;
