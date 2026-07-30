@@ -6,7 +6,7 @@
 /*   By: fpedroso <fpedroso@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/21 00:00:00 by mona              #+#    #+#             */
-/*   Updated: 2026/07/30 19:15:05 by fpedroso         ###   ########.fr       */
+/*   Updated: 2026/07/30 20:41:26 by fpedroso         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,6 +37,19 @@
 # define PURPLE	0xFF00FFFF
 # define BLACK	0xFFFAFAFA
 
+/* 3D view, debug palette. One colour per wall face so a corner shows at a
+ * glance which face the ray convention picked, plus a black floor ruled
+ * with neon pink on the world tile boundaries: a wrong horizon, a bad
+ * fisheye correction or a wrong distance scale all show up as bent or
+ * unevenly spaced lines, which a flat floor would hide. */
+# define SKY		0x0A1433FF
+# define GROUND		0x000000FF
+# define GRID_PINK	0xFF10F0FF
+# define FACE_N		0x00E5FFFF
+# define FACE_S		0x9B30FFFF
+# define FACE_W		0xFFC020FF
+# define FACE_E		0xF0F0E6FF
+
 /* -------------------------------------------------------------------- */
 /*  TUNABLE. These are the knobs. Everything in the derived block below  */
 /*  follows from them, so changing one here is enough.                   */
@@ -54,7 +67,7 @@
  * frame. PL_RADIUS drives both collision and the minimap dot, so what is
  * drawn is exactly the footprint that collides. */
 # define PL_RADIUS 0.25
-# define MOVE_SPEED 0.02
+# define MOVE_SPEED 0.05
 # define PAN_INCR 3.0
 
 /* Minimap. MINIMAP_SCALE is the largest fraction of the window it may
@@ -67,6 +80,12 @@
 # define MM_MARGIN 0
 # define MM_RAY_STEP 10
 
+/* Target on-screen width, in pixels, of a floor grid line. The world-space
+ * threshold is derived from this per row, so a line keeps roughly this
+ * width all the way to the horizon instead of fattening up close and
+ * thinning out to nothing far away. */
+# define GRID_PX 1.5
+
 /* -------------------------------------------------------------------- */
 /*  DERIVED. Do not edit these; change the knobs above instead.          */
 /* -------------------------------------------------------------------- */
@@ -76,6 +95,14 @@
 
 /* One ray per screen column. */
 # define RAY_COUNT SCR_W
+
+/* The horizon, and the distance from the eye to the projection plane in
+ * pixels. HORIZON is where floor meets ceiling and where a wall of
+ * infinite distance collapses to. PROJ_PLANE converts a world length at
+ * a given perpendicular distance into pixels: px = len * PROJ_PLANE / d.
+ * The floor grid uses it in reverse, to size its threshold. */
+# define HORIZON (SCR_H / 2)
+# define PROJ_PLANE ((SCR_W / 2.0) / tan(HALF_FOV))
 
 /* The box the minimap may not exceed, and the room left for the map
  * itself once the margin is taken out of it. */
@@ -220,6 +247,21 @@ typedef struct s_casting_ray
 	int			side;
 }	t_casting_ray;
 
+/* One vertical strip of the 3D view, resolved from a t_ray before any
+ * pixel is written. start and end are already clamped into the window,
+ * because mlx_put_pixel asserts rather than clips. plane is the ray
+ * direction divided by cos_off: the floor cast needs euclidean distance
+ * along the ray, and dividing out the fisheye factor once per column
+ * gives it without a per-pixel trig call. */
+typedef struct s_column
+{
+	int32_t		x;
+	int32_t		start;
+	int32_t		end;
+	uint32_t	color;
+	t_dbl_coord	plane;
+}	t_column;
+
 /* ========================================================================== */
 /*                                   MLX                                      */
 /* ========================================================================== */
@@ -243,11 +285,16 @@ int		pad_grid(t_map *map);
 /* ========================================================================== */
 /*                                RENDERING                                   */
 /* ========================================================================== */
-void	render(t_game *game);
-void	compute(t_game *game);
-void	draw_frame(t_game *game);
-void	draw_minimap(t_game *game);
-void	update_pl_position(t_game *game);
+void		render(t_game *game);
+void		compute(t_game *game);
+void		draw_frame(t_game *game);
+void		draw_minimap(t_game *game);
+void		draw_3d(t_game *game);
+void		draw_ceiling(t_game *game, t_column *col);
+void		draw_wall(t_game *game, t_column *col);
+void		draw_floor(t_game *game, t_column *col);
+void		update_pl_position(t_game *game);
+uint32_t	face_color(t_ray *ray);
 
 /* ========================================================================== */
 /*                              RENDER INIT                                   */

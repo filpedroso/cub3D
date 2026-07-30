@@ -76,6 +76,14 @@ bool	init_render(t_game *game)
 ** the view direction. Those offsets never change, so cast_rays can
 ** rotate the whole fan from a single cos/sin per frame instead of
 ** calling trig twice per column.
+**
+** Columns are spaced by equal tangent, not by equal angle. The screen
+** is a flat plane, so a linear sweep in angle is not a perspective
+** projection: it bows straight walls outwards. Spreading the columns
+** evenly across the projection plane and taking the arctangent back to
+** an angle is what makes them straight. perp_dist = hit_dist * cos_off
+** is unaffected, since perpendicular distance is euclidean distance
+** times the cosine of the offset angle whatever the spacing.
 */
 void	init_fov_lut(t_game *game)
 {
@@ -85,7 +93,7 @@ void	init_fov_lut(t_game *game)
 	i = 0;
 	while (i < RAY_COUNT)
 	{
-		offset = -HALF_FOV + (i * FOV / RAY_COUNT);
+		offset = atan((2.0 * i / RAY_COUNT - 1.0) * tan(HALF_FOV));
 		game->rays[i].cos_off = cos(offset);
 		game->rays[i].sin_off = sin(offset);
 		i++;

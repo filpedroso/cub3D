@@ -47,7 +47,7 @@ else
     MLX_LINK := -ldl -pthread -lm
 endif
 
-FILES :=	main_test_with_render.c					\
+FILES :=	main.c					\
 			render/render.c			\
 			render/render_init.c	\
 			render/minimap_bake.c	\
@@ -57,6 +57,8 @@ FILES :=	main_test_with_render.c					\
 			render/update_pl_pos.c	\
 			render/draw_ray.c		\
 			render/draw_frame.c		\
+			render/draw_column.c	\
+			render/draw_floor.c		\
 			render/compute.c		\
 			utils/utils.c			\
 			parser/parser.c			\
