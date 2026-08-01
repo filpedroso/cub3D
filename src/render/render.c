@@ -18,21 +18,27 @@ void	render(t_game *game)
 {
 	game->show_minimap = true;
 	game->show_rays = true;
+	game->show_tex = true;
 	init_minimap_geometry(game);
+	if (!load_textures(game))
+		return ;
 	if (!config_mlx(game))
 	{
+		free_textures(game);
 		handle_error(ERR_MLX);
 		return ;
 	}
 	if (!init_render(game))
 	{
 		mlx_terminate(game->mlx);
+		free_textures(game);
 		handle_error(ERR_MLX);
 		return ;
 	}
 	mlx_loop_hook(game->mlx, on_update, game);
 	mlx_loop(game->mlx);
 	mlx_terminate(game->mlx);
+	free_textures(game);
 	free(game->map_pixels_buf);
 	game->map_pixels_buf = NULL;
 }

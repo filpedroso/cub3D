@@ -6,7 +6,7 @@
 /*   By: fpedroso <fpedroso@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/30 20:10:00 by fpedroso          #+#    #+#             */
-/*   Updated: 2026/07/30 20:10:00 by fpedroso         ###   ########.fr       */
+/*   Updated: 2026/08/01 12:26:23 by fpedroso         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,6 +82,6 @@ static uint32_t	grid_color(t_dbl_coord eps, t_dbl_coord world)
 	fx = world.x - floor(world.x);
 	fy = world.y - floor(world.y);
 	if (fmin(fx, 1.0 - fx) < eps.x || fmin(fy, 1.0 - fy) < eps.y)
-		return (GRID_PINK);
-	return (GROUND);
+		return (FLOOR_LINES);
+	return (FLOOR);
 }

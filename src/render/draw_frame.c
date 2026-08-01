@@ -12,7 +12,7 @@
 
 #include "cub3d.h"
 
-static t_column	prep_column(t_game *game, int index);
+static t_face	face_of(t_ray *ray);
 
 /*
 ** main_img is the 3D view and is never optional; only the minimap
@@ -28,25 +28,16 @@ void	draw_frame(t_game *game)
 }
 
 /*
-** One ray per column, so the fan cast_rays produced maps straight onto
-** the window with no resampling. Ceiling, wall and floor between them
-** cover every row of the strip, which is why main_img is never cleared:
-** each frame overwrites the whole image.
+** The whole textured-versus-debug decision, taken once per frame. Both
+** paths run their own column loop, so nothing downstream tests the flag
+** again: no branch per column, and none per pixel.
 */
 void	draw_3d(t_game *game)
 {
-	t_column	col;
-	int			i;
-
-	i = 0;
-	while (i < RAY_COUNT)
-	{
-		col = prep_column(game, i);
-		draw_ceiling(game, &col);
-		draw_wall(game, &col);
-		draw_floor(game, &col);
-		i++;
-	}
+	if (game->show_tex)
+		draw_view_tex(game);
+	else
+		draw_view_dbg(game);
 }
 
 /*
@@ -54,21 +45,41 @@ void	draw_3d(t_game *game)
 ** fisheye-corrected distance, so the projection is the bare
 ** SCR_H / distance; start and end are clamped here, once, because
 ** mlx_put_pixel asserts on out-of-range coordinates instead of
-** clipping them.
+** clipping them, while line_h keeps the unclamped height for the
+** texture walk.
 */
-static t_column	prep_column(t_game *game, int index)
+t_column	prep_column(t_game *game, int index)
 {
 	t_column	col;
 	t_ray		*ray;
-	double		line_h;
 
 	ray = &game->rays[index];
-	line_h = (double)SCR_H / fmax(ray->perp_dist, 1e-6);
+	col.line_h = (double)SCR_H / fmax(ray->perp_dist, 1e-6);
 	col.x = index;
-	col.start = (int32_t)fmax(0.0, HORIZON - line_h / 2.0);
-	col.end = (int32_t)fmin(HORIZON + line_h / 2.0, (double)SCR_H - 1);
-	col.color = face_color(ray);
+	col.start = (int32_t)fmax(0.0, HORIZON - col.line_h / 2.0);
+	col.end = (int32_t)fmin(HORIZON + col.line_h / 2.0, (double)SCR_H - 1);
+	col.face = face_of(ray);
 	col.plane.x = ray->dir.x / ray->cos_off;
 	col.plane.y = ray->dir.y / ray->cos_off;
 	return (col);
+}
+
+/*
+** Which of the four faces the ray landed on, named after the direction
+** the wall surface faces rather than the direction of travel. side 1 is
+** a y-step, so a ray heading south (dir.y > 0, since the angle
+** convention is screen-space: E = 0, S = 90) can only have struck the
+** north face of the tile it entered. Same reasoning on x.
+*/
+static t_face	face_of(t_ray *ray)
+{
+	if (ray->side == 1)
+	{
+		if (ray->dir.y > 0)
+			return (F_NORTH);
+		return (F_SOUTH);
+	}
+	if (ray->dir.x > 0)
+		return (F_WEST);
+	return (F_EAST);
 }

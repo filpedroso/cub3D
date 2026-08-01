@@ -13,6 +13,7 @@
 #include "cub3d.h"
 
 static uint32_t	fit_axis(int tiles, double scale);
+static uint32_t	pack_rgb(const int rgb[3]);
 
 /*
 ** Runs before config_mlx, because the minimap image is sized to the map
@@ -59,6 +60,8 @@ bool	init_render(t_game *game)
 	size_t	size;
 
 	init_fov_lut(game);
+	game->ceil_rgba = pack_rgb(game->config.ceil);
+	game->floor_rgba = pack_rgb(game->config.floor);
 	size = (size_t)game->map_img->width * game->map_img->height
 		* sizeof(uint32_t);
 	game->map_pixels_buf = malloc(size);
@@ -69,6 +72,17 @@ bool	init_render(t_game *game)
 	}
 	bake_minimap_bg(game);
 	return (true);
+}
+
+/*
+** The parsed F and C lines into the 0xRRGGBBAA word the frame loop
+** wants. Opaque: the 3D view is the bottom image, so anything less
+** would blend it with the window background.
+*/
+static uint32_t	pack_rgb(const int rgb[3])
+{
+	return (((uint32_t)rgb[0] << 24) | ((uint32_t)rgb[1] << 16)
+		| ((uint32_t)rgb[2] << 8) | 0xFF);
 }
 
 /*

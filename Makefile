@@ -3,17 +3,17 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: mona <mona@student.42.fr>                  +#+  +:+       +#+         #
+#    By: fpedroso <fpedroso@student.42sp.org.br>    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/30 13:23:40 by fpedroso          #+#    #+#              #
-#    Updated: 2026/06/07 20:28:21 by mona             ###   ########.fr        #
+#    Updated: 2026/08/01 12:01:22 by fpedroso         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 NAME = cub3D
 
 CC := gcc
-CFLAGS := -Wall -Wextra -Werror -g -fsanitize=address,undefined -Iinclude -Ilibft -IMLX42/include
+CFLAGS := -Wall -Wextra -Werror -g -Iinclude -Ilibft -IMLX42/include
 # Asan: -fsanitize=address,undefined
 
 # Colors
@@ -57,8 +57,10 @@ FILES :=	main.c					\
 			render/update_pl_pos.c	\
 			render/draw_ray.c		\
 			render/draw_frame.c		\
-			render/draw_column.c	\
+			render/draw_tex_view.c	\
+			render/draw_dbg_view.c	\
 			render/draw_floor.c		\
+			render/texture_load.c	\
 			render/compute.c		\
 			utils/utils.c			\
 			parser/parser.c			\

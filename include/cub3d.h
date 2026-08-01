@@ -6,7 +6,7 @@
 /*   By: fpedroso <fpedroso@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/21 00:00:00 by mona              #+#    #+#             */
-/*   Updated: 2026/07/30 20:41:26 by fpedroso         ###   ########.fr       */
+/*   Updated: 2026/08/01 12:26:23 by fpedroso         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,19 +36,36 @@
 # define RED	0xFF0000FF
 # define PURPLE	0xFF00FFFF
 # define BLACK	0xFFFAFAFA
+# define GRAY	0xAAAAAAFF
+
+// PALLETE 1
+# define CYAN		0x77FFFFFF
+# define VIOLET		0x9B30FFFF
+# define GOLD		0xFFC020FF
+# define OFFWHITE	0xF0F0E6FF
+
+// PALLETTE 2
+/* Every colour here is 0xRRGGBBAA, so the trailing FF is the opaque
+ * alpha and is not optional: 0xe0ecf3 would be read as R=00 G=e0 B=ec
+ * with alpha f3, which is a different colour and slightly transparent. */
+# define BLUE1	0xe0ecf3FF
+# define BLUE2	0xbdd2dcFF
+# define BLUE3	0x98b2c4FF
+# define BLUE4	0x4e6d86FF
 
 /* 3D view, debug palette. One colour per wall face so a corner shows at a
  * glance which face the ray convention picked, plus a black floor ruled
  * with neon pink on the world tile boundaries: a wrong horizon, a bad
  * fisheye correction or a wrong distance scale all show up as bent or
  * unevenly spaced lines, which a flat floor would hide. */
-# define SKY		0x0A1433FF
-# define GROUND		0x000000FF
-# define GRID_PINK	0xFF10F0FF
-# define FACE_N		0x00E5FFFF
-# define FACE_S		0x9B30FFFF
-# define FACE_W		0xFFC020FF
-# define FACE_E		0xF0F0E6FF
+# define SKY			0x0A1433FF
+# define FLOOR			GRAY
+# define FLOOR_LINES	OFFWHITE
+# define FACE_N		BLUE1
+# define FACE_S		BLUE2
+# define FACE_W		BLUE3
+# define FACE_E		BLUE4
+
 
 /* -------------------------------------------------------------------- */
 /*  TUNABLE. These are the knobs. Everything in the derived block below  */
@@ -56,7 +73,7 @@
 /* -------------------------------------------------------------------- */
 
 /* Window, in pixels. */
-# define SCR_W 1500
+# define SCR_W 900
 # define SCR_H 600
 
 /* Camera aperture, in degrees. */
@@ -67,8 +84,8 @@
  * frame. PL_RADIUS drives both collision and the minimap dot, so what is
  * drawn is exactly the footprint that collides. */
 # define PL_RADIUS 0.25
-# define MOVE_SPEED 0.05
-# define PAN_INCR 3.0
+# define MOVE_SPEED 0.04
+# define PAN_INCR 2.0
 
 /* Minimap. MINIMAP_SCALE is the largest fraction of the window it may
  * occupy: the map is fitted inside that box preserving aspect ratio, and
@@ -130,6 +147,18 @@ typedef enum e_error
 	ERR_INVALID_ID,
 	ERR_MLX
 }	t_error;
+
+/* Which of the four wall faces a ray struck, named after the direction
+ * the surface faces. Doubles as the index into t_game.tex, so the whole
+ * pipeline stays indexed instead of repeating a four-way branch. The
+ * order is fixed by that: it must match how load_textures fills tex[]. */
+typedef enum e_face
+{
+	F_NORTH = 0,
+	F_SOUTH,
+	F_WEST,
+	F_EAST
+}	t_face;
 
 /* ========================================================================== */
 /*                                 STRUCTURES                                 */
@@ -215,19 +244,27 @@ typedef struct s_minimap
 	uint32_t	height;
 }	t_minimap;
 
+/* tex is indexed by t_face, so a column goes straight from the face it
+ * hit to the texture to sample. ceil_rgba/floor_rgba are the parsed F/C
+ * colours packed once at init, since the frame loop wants a single
+ * uint32_t and config keeps them as three ints. */
 typedef struct s_game
 {
-	mlx_t		*mlx;
-	mlx_image_t	*map_img;
-	mlx_image_t	*main_img;
-	uint8_t		*map_pixels_buf;
-	t_ray		rays[RAY_COUNT];
-	bool		show_minimap;
-	bool		show_rays;
-	t_map		map;
-	t_minimap	minimap;
-	t_config	config;
-	t_player	player;
+	mlx_t			*mlx;
+	mlx_image_t		*map_img;
+	mlx_image_t		*main_img;
+	uint8_t			*map_pixels_buf;
+	mlx_texture_t	*tex[4];
+	uint32_t		ceil_rgba;
+	uint32_t		floor_rgba;
+	t_ray			rays[RAY_COUNT];
+	bool			show_minimap;
+	bool			show_rays;
+	bool			show_tex;
+	t_map			map;
+	t_minimap		minimap;
+	t_config		config;
+	t_player		player;
 }	t_game;
 
 
@@ -249,16 +286,20 @@ typedef struct s_casting_ray
 
 /* One vertical strip of the 3D view, resolved from a t_ray before any
  * pixel is written. start and end are already clamped into the window,
- * because mlx_put_pixel asserts rather than clips. plane is the ray
- * direction divided by cos_off: the floor cast needs euclidean distance
- * along the ray, and dividing out the fisheye factor once per column
- * gives it without a per-pixel trig call. */
+ * because mlx_put_pixel asserts rather than clips; line_h is the same
+ * height left unclamped, which is what lets a wall taller than the
+ * window start partway down its texture instead of squashing a whole
+ * copy into view. plane is the ray direction divided by cos_off: the
+ * floor cast needs euclidean distance along the ray, and dividing out
+ * the fisheye factor once per column gives it without a per-pixel trig
+ * call. */
 typedef struct s_column
 {
 	int32_t		x;
 	int32_t		start;
 	int32_t		end;
-	uint32_t	color;
+	double		line_h;
+	t_face		face;
 	t_dbl_coord	plane;
 }	t_column;
 
@@ -290,16 +331,18 @@ void		compute(t_game *game);
 void		draw_frame(t_game *game);
 void		draw_minimap(t_game *game);
 void		draw_3d(t_game *game);
-void		draw_ceiling(t_game *game, t_column *col);
-void		draw_wall(t_game *game, t_column *col);
+void		draw_view_tex(t_game *game);
+void		draw_view_dbg(t_game *game);
 void		draw_floor(t_game *game, t_column *col);
 void		update_pl_position(t_game *game);
-uint32_t	face_color(t_ray *ray);
+t_column	prep_column(t_game *game, int index);
 
 /* ========================================================================== */
 /*                              RENDER INIT                                   */
 /* ========================================================================== */
 void		init_minimap_geometry(t_game *game);
+bool		load_textures(t_game *game);
+void		free_textures(t_game *game);
 bool		init_render(t_game *game);
 void		init_fov_lut(t_game *game);
 void		bake_minimap_bg(t_game *game);
