@@ -6,47 +6,62 @@
 /*   By: fpedroso <fpedroso@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/06/16 19:41:28 by fpedroso          #+#    #+#             */
-/*   Updated: 2026/06/16 19:41:28 by fpedroso         ###   ########.fr       */
+/*   Updated: 2026/07/28 12:00:00 by fpedroso         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "cub3d.h"
 
-static t_canvas_ray	prep_drawing_ray(t_player pl, t_dbl_coord ray_dir,
-	double perp_dist);
+static t_canvas_ray	prep_drawing_ray(t_game *game, int index);
 
-void	draw_ray(t_game *game, t_player pl, t_dbl_coord ray_dir,
-	double perp_dist)
+/*
+** Traces one ray onto the minimap, from the player to the wall it hit.
+** Reads hit_dist, the true euclidean distance, rather than perp_dist,
+** which is the fisheye-corrected value the 3D view wants.
+*/
+void	draw_ray(t_game *game, int index)
 {
 	t_canvas_ray	d_ray;
+	t_dbl_coord		cur;
 	double			steps;
 	int				i;
 
-	d_ray = prep_drawing_ray(pl, ray_dir, perp_dist);
-
+	d_ray = prep_drawing_ray(game, index);
 	steps = fmax(fabs(d_ray.diff.x), fabs(d_ray.diff.y));
+	if (steps < 1.0)
+		return ;
+	cur = d_ray.start;
 	i = 0;
 	while (i <= (int)steps)
 	{
-		if (d_ray.current.x >= 0 && d_ray.current.x < game->map_img->width &&
-			d_ray.current.y >= 0 && d_ray.current.y < game->map_img->height)
-			mlx_put_pixel(game->map_img, (uint32_t)d_ray.current.x, (uint32_t)d_ray.current.y, PURPLE);
-		d_ray.current.x += d_ray.diff.x / steps;
-		d_ray.current.y += d_ray.diff.y / steps;
+		if (cur.x >= 0 && cur.x < game->map_img->width
+			&& cur.y >= 0 && cur.y < game->map_img->height)
+			mlx_put_pixel(game->map_img, (uint32_t)cur.x,
+				(uint32_t)cur.y, PURPLE);
+		cur.x += d_ray.diff.x / steps;
+		cur.y += d_ray.diff.y / steps;
 		i++;
 	}
 }
 
-static t_canvas_ray	prep_drawing_ray(t_player pl, t_dbl_coord ray_dir, double perp_dist)
+/*
+** Both endpoints are computed in world tiles and converted once, so
+** the minimap scale is applied in a single place.
+*/
+static t_canvas_ray	prep_drawing_ray(t_game *game, int index)
 {
-	t_canvas_ray	drawing_ray;
-	
-	drawing_ray.start.x = pl.x * SQUARE_SZ;
-	drawing_ray.start.y = pl.y * SQUARE_SZ;
-	drawing_ray.end.x = drawing_ray.start.x + ray_dir.x * perp_dist * SQUARE_SZ;
-	drawing_ray.end.y = drawing_ray.start.y + ray_dir.y * perp_dist * SQUARE_SZ;
-	drawing_ray.diff.x = drawing_ray.end.x - drawing_ray.start.x;
-	drawing_ray.diff.y = drawing_ray.end.y - drawing_ray.start.y;
-	drawing_ray.current = drawing_ray.start;
-	return (drawing_ray);
+	t_canvas_ray	d_ray;
+	t_dbl_coord		world;
+	t_ray			*ray;
+
+	ray = &game->rays[index];
+	world.x = game->player.x;
+	world.y = game->player.y;
+	d_ray.start = tile_to_px(&game->minimap, world);
+	world.x = game->player.x + ray->dir.x * ray->hit_dist;
+	world.y = game->player.y + ray->dir.y * ray->hit_dist;
+	d_ray.end = tile_to_px(&game->minimap, world);
+	d_ray.diff.x = d_ray.end.x - d_ray.start.x;
+	d_ray.diff.y = d_ray.end.y - d_ray.start.y;
+	return (d_ray);
 }

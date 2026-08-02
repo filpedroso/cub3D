@@ -54,7 +54,7 @@ int	handle_error(t_error error)
 		"Error\ninvalid number of player\n",
 		"Error\nfailed to load/missing texture: (NO/SO/WE/EA)\n",
 		"Error\ninvalid RGB\n",
-		"Error\ninvalid identifier in .cub\n"
+		"Error\ninvalid identifier in .cub\n",
 		"Error\nMLX42 initialization failed\n"
 	};
 
@@ -63,4 +63,24 @@ int	handle_error(t_error error)
 		printf("%s", messages[error]);
 	}
 	return (ERROR);
+}
+
+/**
+ * @brief Reports whether a map cell blocks movement and rays.
+ *
+ * Anything that is not open floor blocks. Spaces are legal map
+ * characters and appear inside the map body (see subject_map.cub),
+ * plus pad_grid introduces them on short rows, so testing for '1'
+ * alone would let rays leak out through the void.
+ *
+ * Player spawn characters never reach here: find_player rewrites
+ * them to '0' during parsing.
+ *
+ * @param c The grid character to test.
+ *
+ * @return true if the cell is solid, false if it is walkable floor.
+ */
+bool	is_solid(char c)
+{
+	return (c != '0');
 }

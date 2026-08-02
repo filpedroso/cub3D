@@ -6,7 +6,7 @@
 /*   By: fpedroso <fpedroso@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/06/10 22:11:25 by fpedroso          #+#    #+#             */
-/*   Updated: 2026/06/10 22:11:25 by fpedroso         ###   ########.fr       */
+/*   Updated: 2026/07/25 18:56:57 by fpedroso         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,69 +14,78 @@
 
 static bool	initiate_mlx(t_game *game);
 static bool	add_map_img(t_game *game);
-static bool	add_player_img(t_game *game);
+static bool	add_main_img(t_game *game);
 
 bool	config_mlx(t_game *game)
 {
 	if (!initiate_mlx(game))
 		return (false);
-
+	if (!add_main_img(game))
+	{
+		mlx_terminate(game->mlx);
+		return (false);
+	}
 	if (!add_map_img(game))
 	{
 		mlx_terminate(game->mlx);
 		return (false);
 	}
-
-	if (!add_player_img(game))
-	{
-		mlx_terminate(game->mlx);
-		return (false);
-	}
-
 	return (true);
 }
 
 static bool	initiate_mlx(t_game *game)
 {
-	game->mlx = mlx_init((int32_t)(game->map.cols * SQUARE_SZ),
-			(int32_t)(game->map.rows * SQUARE_SZ), "minimap", true);
+	game->mlx = mlx_init(SCR_W, SCR_H, "cub3D", true);
 	if (!game->mlx)
 	{
-		puts(mlx_strerror(mlx_errno));
+		printf("%s\n", mlx_strerror(mlx_errno));
 		return (false);
 	}
 	return (true);
 }
 
+/*
+** Added to the window first, so the 3D view sits underneath the
+** minimap overlay.
+*/
+static bool	add_main_img(t_game *game)
+{
+	game->main_img = mlx_new_image(game->mlx, SCR_W, SCR_H);
+	if (!game->main_img)
+	{
+		printf("%s\n", mlx_strerror(mlx_errno));
+		return (false);
+	}
+	if (mlx_image_to_window(game->mlx, game->main_img, 0, 0) == -1)
+	{
+		printf("%s\n", mlx_strerror(mlx_errno));
+		return (false);
+	}
+	return (true);
+}
+
+/*
+** Sized and anchored from the geometry init_minimap_geometry already
+** worked out, so the image hugs the map exactly and its bottom-left
+** corner lands on the window's.
+*/
 static bool	add_map_img(t_game *game)
 {
-	game->map_img = mlx_new_image(game->mlx,
-			(uint32_t)(game->map.cols * SQUARE_SZ),
-			(uint32_t)(game->map.rows * SQUARE_SZ));
+	uint32_t	width;
+	uint32_t	height;
+
+	width = game->minimap.width;
+	height = game->minimap.height;
+	game->map_img = mlx_new_image(game->mlx, width, height);
 	if (!game->map_img)
 	{
-		puts(mlx_strerror(mlx_errno));
+		printf("%s\n", mlx_strerror(mlx_errno));
 		return (false);
 	}
-	if (mlx_image_to_window(game->mlx, game->map_img, 0, 0) == -1)
+	if (mlx_image_to_window(game->mlx, game->map_img, 0,
+			SCR_H - (int32_t)height) == -1)
 	{
-		puts(mlx_strerror(mlx_errno));
-		return (false);
-	}
-	return (true);
-}
-
-static bool	add_player_img(t_game *game)
-{
-	game->player_img = mlx_new_image(game->mlx, CIRCLE_DIAM, CIRCLE_DIAM);
-	if (!game->player_img)
-	{
-		puts(mlx_strerror(mlx_errno));
-		return (false);
-	}
-	if (mlx_image_to_window(game->mlx, game->player_img, 0, 0) == -1)
-	{
-		puts(mlx_strerror(mlx_errno));
+		printf("%s\n", mlx_strerror(mlx_errno));
 		return (false);
 	}
 	return (true);

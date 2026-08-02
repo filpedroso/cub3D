@@ -3,17 +3,17 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: mona <mona@student.42.fr>                  +#+  +:+       +#+         #
+#    By: fpedroso <fpedroso@student.42sp.org.br>    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/30 13:23:40 by fpedroso          #+#    #+#              #
-#    Updated: 2026/06/07 20:28:21 by mona             ###   ########.fr        #
+#    Updated: 2026/08/01 12:01:22 by fpedroso         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 NAME = cub3D
 
 CC := gcc
-CFLAGS := -Wall -Wextra -Werror -g -fsanitize=address,undefined -Iinclude -Ilibft -IMLX42/include
+CFLAGS := -Wall -Wextra -Werror -g -Iinclude -Ilibft -IMLX42/include
 # Asan: -fsanitize=address,undefined
 
 # Colors
@@ -32,20 +32,41 @@ MLX_DIR := MLX42/build
 
 LIBFT := $(LIBFT_DIR)/libft.a
 MLX   := $(MLX_DIR)/libmlx42.a
-GLFW  := MLX42/build/_deps/glfw-build/src/libglfw3.a
 
-FILES :=	main_test_with_render.c					\
+# MLX42 gets GLFW either from its own CMake fetch or from a system install.
+# Deferred (=) so the check happens after $(MLX) has been built.
+GLFW_FETCHED := $(MLX_DIR)/_deps/glfw-build/src/libglfw3.a
+GLFW = $(if $(wildcard $(GLFW_FETCHED)),$(GLFW_FETCHED),\
+	$(shell pkg-config --libs glfw3 2>/dev/null || echo -lglfw))
+
+# MLX42 links against the native window system, which differs per host.
+UNAME_S := $(shell uname -s)
+ifeq ($(UNAME_S),Darwin)
+    MLX_LINK := -framework Cocoa -framework OpenGL -framework IOKit
+else
+    MLX_LINK := -ldl -pthread -lm
+endif
+
+FILES :=	main.c					\
 			render/render.c			\
+			render/render_init.c	\
+			render/minimap_bake.c	\
 			render/draw_minimap.c	\
-			render/draw_player.c	\
 			render/mlx_config.c		\
 			render/raycasting.c		\
 			render/update_pl_pos.c	\
 			render/draw_ray.c		\
+			render/draw_frame.c		\
+			render/draw_tex_view.c	\
+			render/draw_dbg_view.c	\
+			render/draw_floor.c		\
+			render/texture_load.c	\
+			render/compute.c		\
 			utils/utils.c			\
 			parser/parser.c			\
 			parser/parser_meta.c	\
 			parser/parser_map.c		\
+			parser/parser_grid.c	\
 			parser/parser_color.c	\
 			parser/parser_walls.c	\
 			parser/file_utils.c		\
@@ -60,6 +81,7 @@ TEST_OBJS :=	$(OBJ_DIR)/main_test.o			 \
 				$(OBJ_DIR)/parser/parser.o		 \
 				$(OBJ_DIR)/parser/parser_meta.o \
 				$(OBJ_DIR)/parser/parser_map.o	 \
+				$(OBJ_DIR)/parser/parser_grid.o	 \
 				$(OBJ_DIR)/parser/parser_color.o \
 				$(OBJ_DIR)/parser/parser_walls.o \
 				$(OBJ_DIR)/parser/file_utils.o	 \
@@ -68,9 +90,9 @@ TEST_OBJS :=	$(OBJ_DIR)/main_test.o			 \
 
 all: $(NAME)
 
-$(NAME): $(OBJ) $(LIBFT)
+$(NAME): $(OBJ) $(LIBFT) $(MLX)
 	@$(CC) $(CFLAGS) $(OBJ) $(LIBFT) $(MLX) $(GLFW) \
-		-framework Cocoa -framework OpenGL -framework IOKit -o $(NAME)
+		$(MLX_LINK) -o $(NAME)
 	@$(MAKE) banner
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
@@ -80,9 +102,14 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 $(LIBFT):
 	@$(MAKE) -C $(LIBFT_DIR) --no-print-directory
 
-test: $(TEST_OBJS) $(LIBFT)
+$(MLX):
+	@echo "$(BLUE)Building MLX42...$(RESET)"
+	@cmake -S MLX42 -B $(MLX_DIR) -DBUILD_TESTS=OFF > /dev/null
+	@$(MAKE) -C $(MLX_DIR) --no-print-directory > /dev/null
+
+test: $(TEST_OBJS) $(LIBFT) $(MLX)
 	@$(CC) $(CFLAGS) $(TEST_OBJS) $(LIBFT) $(MLX) $(GLFW) \
-		-framework Cocoa -framework OpenGL -framework IOKit -o $(TEST_NAME)
+		$(MLX_LINK) -o $(TEST_NAME)
 	@echo "$(GREEN)Parser test binary built: ./$(TEST_NAME) <map.cub>$(RESET)"
 
 clean:

@@ -62,6 +62,9 @@ int	has_only_valid_chars(char **map)
  * position (x, y) and direction in the player struct, then replaces
  * the spawn character with '0' so the raycaster treats it as floor.
  *
+ * The position is offset to the centre of the tile. Spawning exactly
+ * on a corner leaves the DDA with a side_dist of zero on one axis.
+ *
  * @param map     NULL-terminated 2D array representing the map grid.
  * @param player  Pointer to t_player to be populated.
  *
@@ -82,8 +85,8 @@ int	find_player(char **map, t_player *player)
 			if (map[i][j] == 'N' || map[i][j] == 'S'
 				|| map[i][j] == 'E' || map[i][j] == 'W')
 			{
-				player->x = j;
-				player->y = i;
+				player->x = j + 0.5;
+				player->y = i + 0.5;
 				player->dir = map[i][j];
 				map[i][j] = '0';
 				return (ERR_NONE);
@@ -183,5 +186,5 @@ int	parse_map_grid(int fd, t_map *map, char *first_map_line, t_player *player)
 		return (handle_error(ERR_MAP_OPEN));
 	if (find_player(map->grid, player) != ERR_NONE)
 		return (handle_error(ERR_MAP_PLAYER));
-	return (ERR_NONE);
+	return (pad_grid(map));
 }

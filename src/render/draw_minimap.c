@@ -6,70 +6,84 @@
 /*   By: fpedroso <fpedroso@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/06/13 14:00:33 by fpedroso          #+#    #+#             */
-/*   Updated: 2026/06/13 14:00:33 by fpedroso         ###   ########.fr       */
+/*   Updated: 2026/07/28 12:00:00 by fpedroso         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "cub3d.h"
 
-static void	draw_minimap_pixel(t_game *game, uint32_t px_x, uint32_t px_y);
-static bool	is_in_cube(t_game *game, int px_x, int px_y);
-static bool	is_in_grid(uint32_t width, uint32_t height, int px_x, int px_y);
+static void	draw_rays(t_game *game);
+static void	draw_player(t_game *game);
+static void	plot_disc(t_game *game, t_dbl_coord centre, double radius);
 
+/*
+** The player is drawn last so the ray fan, which emanates from it,
+** cannot bury it.
+*/
 void	draw_minimap(t_game *game)
 {
-	mlx_image_t	*image;
-	uint32_t	px_y;
-	uint32_t	px_x;
+	ft_memcpy(game->map_img->pixels, game->map_pixels_buf,
+		(size_t)game->map_img->width * game->map_img->height
+		* sizeof(uint32_t));
+	if (game->show_rays)
+		draw_rays(game);
+	draw_player(game);
+}
 
-	image = game->map_img;
-	ft_memset(image->pixels, 0, image->width * image->height * sizeof(uint32_t));
-	px_y = 0;
-	while (px_y < image->height)
+/*
+** One line per ray would be several hundred into an image barely a
+** hundred pixels wide. MM_RAY_STEP thins the fan to what the minimap
+** can actually resolve; the 3D view still consumes all RAY_COUNT rays.
+*/
+static void	draw_rays(t_game *game)
+{
+	int	i;
+
+	i = 0;
+	while (i < RAY_COUNT)
 	{
-		px_x = 0;
-		while (px_x < image->width)
-		{
-			draw_minimap_pixel(game, px_x, px_y);
-			px_x++;
-		}
-		px_y++;
+		draw_ray(game, i);
+		i += MM_RAY_STEP;
 	}
-	game->map_img = image;
 }
 
-static void	draw_minimap_pixel(t_game *game, uint32_t px_x, uint32_t px_y)
+static void	draw_player(t_game *game)
 {
-	if (is_in_cube(game, px_x, px_y))
-		mlx_put_pixel(game->map_img, px_x, px_y, BLUE);
-	if (is_in_grid(game->map_img->width, game->map_img->height, px_x, px_y))
-		mlx_put_pixel(game->map_img, px_x, px_y, BLACK);
+	t_dbl_coord	pos;
+
+	pos.x = game->player.x;
+	pos.y = game->player.y;
+	plot_disc(game, tile_to_px(&game->minimap, pos), game->minimap.radius);
 }
 
-static bool	is_in_cube(t_game *game, int px_x, int px_y)
+/*
+** Filled disc, clamped to the image. MLX42's mlx_put_pixel is built on
+** assert(), so an out-of-range coordinate aborts the process rather
+** than being skipped: the clamp is required, not defensive.
+*/
+static void	plot_disc(t_game *game, t_dbl_coord centre, double radius)
 {
-	uint32_t	col;
-	uint32_t	row;
+	t_int_coord	px;
+	t_int_coord	end;
+	double		dx;
+	double		dy;
 
-	col = px_x / SQUARE_SZ;
-	row = px_y / SQUARE_SZ;
-	if (col >= (uint32_t)game->map.cols || row >= (uint32_t)game->map.rows)
-		return (false);
-	if (col >= ft_strlen(game->map.grid[row]))
-		return (false);
-	return (game->map.grid[row][col] == '1');
-}
-
-static bool	is_in_grid(uint32_t width, uint32_t height, int px_x, int px_y)
-{
-	uint32_t	col_off;
-	uint32_t	row_off;
-
-	if (px_y == (int)height - 1 || px_x == (int)width - 1)
-		return (true);
-	if (px_y > (int)height || px_x > (int)width)
-		return (false);
-	col_off = px_x % (int)SQUARE_SZ;
-	row_off = px_y % (int)SQUARE_SZ;
-	return (col_off == 0 || row_off == 0);
+	px.y = (int32_t)fmax(0.0, centre.y - radius);
+	end.y = (int32_t)fmin(centre.y + radius,
+			(double)game->map_img->height - 1);
+	end.x = (int32_t)fmin(centre.x + radius,
+			(double)game->map_img->width - 1);
+	while (px.y <= end.y)
+	{
+		px.x = (int32_t)fmax(0.0, centre.x - radius);
+		while (px.x <= end.x)
+		{
+			dx = px.x - centre.x;
+			dy = px.y - centre.y;
+			if (dx * dx + dy * dy <= radius * radius)
+				mlx_put_pixel(game->map_img, px.x, px.y, RED);
+			px.x++;
+		}
+		px.y++;
+	}
 }

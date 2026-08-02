@@ -6,36 +6,48 @@
 /*   By: fpedroso <fpedroso@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/30 13:55:36 by fpedroso          #+#    #+#             */
-/*   Updated: 2026/05/30 13:55:36 by fpedroso         ###   ########.fr       */
+/*   Updated: 2026/07/28 12:00:00 by fpedroso         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "cub3d.h"
 
-void	on_update(void *param);
+static void	on_update(void *param);
 
 void	render(t_game *game)
 {
+	game->show_minimap = true;
+	game->show_rays = true;
+	game->show_tex = true;
+	init_minimap_geometry(game);
+	if (!load_textures(game))
+		return ;
 	if (!config_mlx(game))
 	{
+		free_textures(game);
 		handle_error(ERR_MLX);
-		return;
+		return ;
 	}
-	game->player_img->instances[0].x = game->player.x * SQUARE_SZ;
-	game->player_img->instances[0].y = game->player.y * SQUARE_SZ;
+	if (!init_render(game))
+	{
+		mlx_terminate(game->mlx);
+		free_textures(game);
+		handle_error(ERR_MLX);
+		return ;
+	}
 	mlx_loop_hook(game->mlx, on_update, game);
 	mlx_loop(game->mlx);
 	mlx_terminate(game->mlx);
+	free_textures(game);
+	free(game->map_pixels_buf);
+	game->map_pixels_buf = NULL;
 }
 
-void	on_update(void *param)
+static void	on_update(void *param)
 {
 	t_game	*game;
 
 	game = (t_game *)param;
-	if (mlx_is_key_down(game->mlx, MLX_KEY_ESCAPE))
-		mlx_close_window(game->mlx);
-	draw_minimap(game);
-	draw_player(game);
-	cast_rays(game);
+	compute(game);
+	draw_frame(game);
 }

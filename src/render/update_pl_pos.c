@@ -6,16 +6,15 @@
 /*   By: fpedroso <fpedroso@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/06/16 19:05:40 by fpedroso          #+#    #+#             */
-/*   Updated: 2026/06/16 19:05:40 by fpedroso         ###   ########.fr       */
+/*   Updated: 2026/07/28 12:00:00 by fpedroso         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "cub3d.h"
 
-void		walk(t_game *game, char dir);
-void		pan_side(t_game *game, char side);
-static bool	will_collide(t_game *game, int32_t x_incr, int32_t y_incr);
-
+static void	walk(t_game *game, char dir);
+static void	pan_side(t_game *game, char side);
+static bool	will_collide(t_game *game, double x, double y);
 
 void	update_pl_position(t_game *game)
 {
@@ -29,27 +28,33 @@ void	update_pl_position(t_game *game)
 		pan_side(game, 'R');
 }
 
-void	walk(t_game *game, char dir)
+/*
+** Movement stays in world tiles from end to end. The previous integer
+** pixel step made real speed vary with heading and truncate to zero at
+** shallow angles. Axes are tested one at a time so a blocked wall
+** still allows sliding along it.
+*/
+static void	walk(t_game *game, char dir)
 {
 	double	rad;
-	int32_t	dx;
-	int32_t	dy;
+	double	dx;
+	double	dy;
 
 	rad = game->player.dir_ang * (M_PI / 180.0);
-	dx = (int32_t)(cos(rad) * MVMT_INCR);
-	dy = (int32_t)(sin(rad) * MVMT_INCR);
+	dx = cos(rad) * MOVE_SPEED;
+	dy = sin(rad) * MOVE_SPEED;
 	if (dir == 'B')
 	{
 		dx = -dx;
 		dy = -dy;
 	}
-	if (!will_collide(game, dx, 0))
-		game->player_img->instances[0].x += dx;
-	if (!will_collide(game, 0, dy))
-		game->player_img->instances[0].y += dy;
+	if (!will_collide(game, game->player.x + dx, game->player.y))
+		game->player.x += dx;
+	if (!will_collide(game, game->player.x, game->player.y + dy))
+		game->player.y += dy;
 }
 
-void	pan_side(t_game *game, char side)
+static void	pan_side(t_game *game, char side)
 {
 	if (side == 'L')
 		game->player.dir_ang -= PAN_INCR;
@@ -57,27 +62,29 @@ void	pan_side(t_game *game, char side)
 		game->player.dir_ang += PAN_INCR;
 }
 
-static bool	will_collide(t_game *game, int32_t x_incr, int32_t y_incr)
+/*
+** Tests the player's axis-aligned footprint centred on (x, y). The
+** position is the centre of the box, matching what the minimap draws,
+** rather than its top-left corner as before.
+*/
+static bool	will_collide(t_game *game, double x, double y)
 {
-	t_int_coord	pl;
-	t_int_dir	dir;
+	t_int_dir	box;
 
-	pl.x = game->player_img->instances[0].x + x_incr;
-	pl.y = game->player_img->instances[0].y + y_incr;
-	dir.left = pl.x / (int32_t)SQUARE_SZ;
-	dir.right = (pl.x + (int32_t)CIRCLE_DIAM - 1) / (int32_t)SQUARE_SZ;
-	dir.up = pl.y / (int32_t)SQUARE_SZ;
-	dir.down = (pl.y + (int32_t)CIRCLE_DIAM - 1) / (int32_t)SQUARE_SZ;
-	if (dir.left < 0 || dir.right >= game->map.cols
-		|| dir.up < 0 || dir.down >= game->map.rows)
+	box.left = (int32_t)floor(x - PL_RADIUS);
+	box.right = (int32_t)floor(x + PL_RADIUS);
+	box.up = (int32_t)floor(y - PL_RADIUS);
+	box.down = (int32_t)floor(y + PL_RADIUS);
+	if (box.left < 0 || box.right >= game->map.cols
+		|| box.up < 0 || box.down >= game->map.rows)
 		return (true);
-	if (game->map.grid[dir.up][dir.left] == '1')
+	if (is_solid(game->map.grid[box.up][box.left]))
 		return (true);
-	if (game->map.grid[dir.up][dir.right] == '1')
+	if (is_solid(game->map.grid[box.up][box.right]))
 		return (true);
-	if (game->map.grid[dir.down][dir.left] == '1')
+	if (is_solid(game->map.grid[box.down][box.left]))
 		return (true);
-	if (game->map.grid[dir.down][dir.right] == '1')
+	if (is_solid(game->map.grid[box.down][box.right]))
 		return (true);
 	return (false);
 }
