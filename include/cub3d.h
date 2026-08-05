@@ -3,16 +3,15 @@
 /*                                                        :::      ::::::::   */
 /*   cub3d.h                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: fpedroso <fpedroso@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: mona <mona@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/21 00:00:00 by mona              #+#    #+#             */
-/*   Updated: 2026/08/01 12:26:23 by fpedroso         ###   ########.fr       */
+/*   Updated: 2026/08/04 21:16:57 by mona             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef CUB3D_H
 # define CUB3D_H
-
 
 # include <stdio.h>
 # include <stdlib.h>
@@ -66,10 +65,12 @@
 # define FACE_W		BLUE3
 # define FACE_E		BLUE4
 
-
 /* -------------------------------------------------------------------- */
-/*  TUNABLE. These are the knobs. Everything in the derived block below  */
-/*  follows from them, so changing one here is enough.                   */
+/*  TUNABLE. These are the knobs. Values that would need arithmetic on   */
+/*  them (Norminette forbids computed #defines) are derived once, at    */
+/*  init time, into t_game fields or plain locals instead — see          */
+/*  init_render, init_fov_lut and init_minimap_geometry in               */
+/*  render_init.c.                                                       */
 /* -------------------------------------------------------------------- */
 
 /* Window, in pixels. */
@@ -103,30 +104,8 @@
  * thinning out to nothing far away. */
 # define GRID_PX 1.5
 
-/* -------------------------------------------------------------------- */
-/*  DERIVED. Do not edit these; change the knobs above instead.          */
-/* -------------------------------------------------------------------- */
-
-# define FOV (FOV_DEG * M_PI / 180.0)
-# define HALF_FOV (FOV / 2.0)
-
 /* One ray per screen column. */
 # define RAY_COUNT SCR_W
-
-/* The horizon, and the distance from the eye to the projection plane in
- * pixels. HORIZON is where floor meets ceiling and where a wall of
- * infinite distance collapses to. PROJ_PLANE converts a world length at
- * a given perpendicular distance into pixels: px = len * PROJ_PLANE / d.
- * The floor grid uses it in reverse, to size its threshold. */
-# define HORIZON (SCR_H / 2)
-# define PROJ_PLANE ((SCR_W / 2.0) / tan(HALF_FOV))
-
-/* The box the minimap may not exceed, and the room left for the map
- * itself once the margin is taken out of it. */
-# define MM_BOX_W ((double)SCR_W * MINIMAP_SCALE)
-# define MM_BOX_H ((double)SCR_H * MINIMAP_SCALE)
-# define MM_FIT_W (MM_BOX_W - 2 * MM_MARGIN)
-# define MM_FIT_H (MM_BOX_H - 2 * MM_MARGIN)
 
 /* ========================================================================== */
 /*                                   ENUMS                                    */
@@ -247,7 +226,11 @@ typedef struct s_minimap
 /* tex is indexed by t_face, so a column goes straight from the face it
  * hit to the texture to sample. ceil_rgba/floor_rgba are the parsed F/C
  * colours packed once at init, since the frame loop wants a single
- * uint32_t and config keeps them as three ints. */
+ * uint32_t and config keeps them as three ints. horizon and proj_plane
+ * are likewise computed once at init (see init_render): horizon is
+ * where floor meets ceiling and where a wall of infinite distance
+ * collapses to; proj_plane converts a world length at a given
+ * perpendicular distance into pixels, px = len * proj_plane / d. */
 typedef struct s_game
 {
 	mlx_t			*mlx;
@@ -257,6 +240,8 @@ typedef struct s_game
 	mlx_texture_t	*tex[4];
 	uint32_t		ceil_rgba;
 	uint32_t		floor_rgba;
+	int32_t			horizon;
+	double			proj_plane;
 	t_ray			rays[RAY_COUNT];
 	bool			show_minimap;
 	bool			show_rays;
@@ -266,7 +251,6 @@ typedef struct s_game
 	t_config		config;
 	t_player		player;
 }	t_game;
-
 
 typedef struct s_canvas_ray
 {
@@ -306,22 +290,23 @@ typedef struct s_column
 /* ========================================================================== */
 /*                                   MLX                                      */
 /* ========================================================================== */
-bool	config_mlx(t_game *game);
+bool		config_mlx(t_game *game);
 
 /* ========================================================================== */
 /*                                  PARSING                                   */
 /* ========================================================================== */
-int		has_cub_extension(const char *filename);
-int		has_png_extension(const char *filename);
-char	*trim_newline(char *line);
-int		parse_texture(const char *line, char **dest);
-int		parse_color(const char *line, int dest[3]);
-int		has_closed_walls(char **map, int rows);
-int		parse_map_grid(int fd, t_map *map, char *first_map_line, t_player *player);
-int		parse_meta(int fd, t_config *config, char **first_map_line);
-int		parse_cub(const char *path, t_game *game);
-int		find_player(char **map, t_player *player);
-int		pad_grid(t_map *map);
+int			has_cub_extension(const char *filename);
+int			has_png_extension(const char *filename);
+char		*trim_newline(char *line);
+int			parse_texture(const char *line, char **dest);
+int			parse_color(const char *line, int dest[3]);
+int			has_closed_walls(char **map, int rows);
+int			parse_map_grid(int fd, t_map *map, char *first_map_line,
+				t_player *player);
+int			parse_meta(int fd, t_config *config, char **first_map_line);
+int			parse_cub(const char *path, t_game *game);
+int			find_player(char **map, t_player *player);
+int			pad_grid(t_map *map);
 
 /* ========================================================================== */
 /*                                RENDERING                                   */
@@ -352,19 +337,19 @@ t_dbl_coord	tile_to_px(t_minimap *mm, t_dbl_coord tile);
 /* ========================================================================== */
 /*                                RAYCASTING                                  */
 /* ========================================================================== */
-void	cast_rays(t_game *game);
-void	draw_ray(t_game *game, int index);
+void		cast_rays(t_game *game);
+void		draw_ray(t_game *game, int index);
 
 /* ========================================================================== */
 /*                                  UTILS                                     */
 /* ========================================================================== */
 
-int		handle_error(t_error error);
-bool	is_solid(char c);
-void	free_map(char **map);
-void	free_visited(char **visited);
-void	free_visited_partial(char **visited, int until);
-int		color_error(char **parts);
-void	free_game(t_game *game);
+int			handle_error(t_error error);
+bool		is_solid(char c);
+void		free_map(char **map);
+void		free_visited(char **visited);
+void		free_visited_partial(char **visited, int until);
+int			color_error(char **parts);
+void		free_game(t_game *game);
 
 #endif
