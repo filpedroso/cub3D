@@ -53,7 +53,7 @@ static void	fill_background(t_game *game)
 	while (y < SCR_H)
 	{
 		color = game->floor_rgba;
-		if (y < (uint32_t)HORIZON)
+		if (y < (uint32_t)game->horizon)
 			color = game->ceil_rgba;
 		x = 0;
 		while (x < SCR_W)
@@ -84,7 +84,7 @@ static void	draw_wall_tex(t_game *game, t_column *col)
 	tex = game->tex[col->face];
 	tex_x = tex_column(game, col);
 	step = (double)tex->height / col->line_h;
-	tex_pos = (col->start - HORIZON + col->line_h / 2.0) * step;
+	tex_pos = (col->start - game->horizon + col->line_h / 2.0) * step;
 	y = col->start;
 	while (y <= col->end)
 	{

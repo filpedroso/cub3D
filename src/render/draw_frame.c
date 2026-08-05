@@ -56,8 +56,9 @@ t_column	prep_column(t_game *game, int index)
 	ray = &game->rays[index];
 	col.line_h = (double)SCR_H / fmax(ray->perp_dist, 1e-6);
 	col.x = index;
-	col.start = (int32_t)fmax(0.0, HORIZON - col.line_h / 2.0);
-	col.end = (int32_t)fmin(HORIZON + col.line_h / 2.0, (double)SCR_H - 1);
+	col.start = (int32_t)fmax(0.0, game->horizon - col.line_h / 2.0);
+	col.end = (int32_t)fmin(game->horizon + col.line_h / 2.0,
+			(double)SCR_H - 1);
 	col.face = face_of(ray);
 	col.plane.x = ray->dir.x / ray->cos_off;
 	col.plane.y = ray->dir.y / ray->cos_off;
