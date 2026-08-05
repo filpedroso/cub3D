@@ -2,7 +2,7 @@
 
 # cub3D
 
-## Description
+## 📖 Description
 
 `cub3D` is a first-person 3D engine written in C, inspired by Wolfenstein
 3D — one of the founding games of the FPS genre. The project implements
@@ -22,7 +22,7 @@ player position, floor/ceiling colors, per-orientation textures) before
 any rendering happens, following 42's project standards (Norminette, no
 leaks, no crashes).
 
-## Instructions
+## ⚙️ Instructions
 
 ### Dependencies
 
@@ -64,7 +64,7 @@ map. Invalid maps (open walls, malformed colors, missing textures,
 etc.) are rejected with a specific error message — see examples in
 `maps/invalid/`.
 
-### Controls
+### 🎮 Controls
 
 | Key                     | Action                                |
 |-------------------------|---------------------------------------|
@@ -99,7 +99,7 @@ C 225,30,0
   starting position and facing direction, `D` door (bonus), space/empty
   outside the map bounds. The map must be fully enclosed by walls.
 
-## Technical Overview
+## 🔨 Technical Overview
 
 ### Raycasting Engine
 
@@ -126,7 +126,7 @@ The 3D view is built one vertical screen column at a time:
 * Four CC0 wall textures (stone, brick, timber) from Kenney.nl's *Retro Textures Fantasy* pack, cropped to 64x64 — see [Resources](#resources) below
 * A visual/thematic pass on the textures is planned as a follow-up, once the README and core features are settled
 
-## Resources
+## 📚 Resources
 
 ### References and documentation
 
