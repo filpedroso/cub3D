@@ -3,8 +3,8 @@ SO ./textures/64x64/greybox_red_grid.png
 WE ./textures/64x64/greybox_green_grid.png
 EA ./textures/64x64/greybox_yellow_grid.png
 
-F 220,100,0
-C 225,30,0
+C 200,200,200
+F 100,100,100
 
 111111111111111111111
 100000000000000000001
