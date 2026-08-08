@@ -22,7 +22,7 @@ Isso envolve resolver 3 problemas clássicos de parsing em C:
 
 | Arquivo | O que tem |
 |---|---|
-| `parser.c` | `parse_cub` — entry point, orquestra tudo |
+| `parser.c` | `parse_cub` — entry point, orquestra tudo; `close_and_drain` — esgota o fd antes de fechar (evita leak do buffer estático do GNL) |
 | `parser_meta.c` | Lê a seção de metadados (`NO/SO/WE/EA/F/C`) até achar o início do mapa |
 | `parser_color.c` | Valida e converte as linhas `F`/`C` em RGB |
 | `parser_map.c` | Monta o grid do mapa e acha o spawn do player |
@@ -136,6 +136,21 @@ solução: `parse_meta` recebe `char **first_map_line` e preenche esse
 ponteiro antes de retornar, e `parse_map_grid` recebe essa linha
 já pronta como primeiro parâmetro de dados — sem precisar reler ou
 dar seek no fd.
+
+**Achado com `leaks` (08/08):** guardar a linha no out-param resolve
+não perder o dado, mas não decide quem é dono dela. `read_meta_lines`
+pode preencher `*first_map_line` com sucesso e o `parse_meta` mesmo
+assim falhar logo depois, no `validate_config` — nesse caminho a
+linha nunca era liberada. `parse_cub` agora inicializa
+`first_line = NULL` e dá `free(first_line)` no ramo de erro do
+`parse_meta` antes de fechar o fd (`free(NULL)` é no-op nos outros
+casos, então é seguro incondicionalmente). De quebra, os três
+`close(fd)` do `parse_cub` viraram `close_and_drain(fd)`: uma função
+nova que lê até `NULL` antes de fechar, porque o `get_next_line`
+também guarda um buffer estático por fd que só se libera sozinho ao
+bater EOF — parar de ler mais cedo (erro, ou não precisar do resto do
+arquivo) e só fechar o fd deixa esse buffer preso pra sempre. Ver
+`docs/parser_concepts.md`, seção 4, pra mais detalhe.
 
 ### Por que `is_map_line` olha o segundo caractere pra N/S/E/W
 

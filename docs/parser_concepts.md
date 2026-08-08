@@ -105,6 +105,29 @@ função que detectou o fim da sua seção guarda a linha já lida ali,
 em vez de tentar "devolvê-la" pro fd. Quem chama recebe essa linha
 pronta como parâmetro de entrada, sem precisar ler de novo.
 
+**Pegadinha real que isso causou (achada com `leaks`, 08/08):** guardar
+a linha num out-param só resolve "não perder o dado" — não resolve
+"quem é dono dela agora". `read_meta_lines` pode ter sucesso (achou a
+linha do mapa, preencheu `*first_map_line`) e o `parse_meta` mesmo
+assim falhar depois, no `validate_config` (ex.: faltou uma textura).
+Nesse caso a linha já tinha sido alocada, ninguém nunca ficava dono
+dela de verdade, e o `parse_cub` fechava o fd no caminho de erro sem
+dar `free` nela — vazamento de 32 bytes, só nesse caminho específico
+(`maps/invalid/invalid03.cub` é o único mapa de teste que passa
+exatamente por ali). Corrigido inicializando `first_line = NULL` no
+`parse_cub` e dando `free(first_line)` antes de fechar o fd nesse
+ramo — `free(NULL)` não faz nada nos outros casos, então é seguro
+chamar sempre.
+
+**Segunda pegadinha, mesma raiz:** `get_next_line` guarda um buffer
+estático por fd, que só é liberado sozinho quando o `read()` interno
+bate em EOF de verdade. Se o parser para de ler antes disso (erro, ou
+simplesmente não precisar do resto do arquivo) e só dá `close(fd)`,
+esse buffer interno fica preso pra sempre — `close()` não sabe nada
+sobre o heap do `get_next_line`. Solução, funciona com qualquer
+implementação de GNL: antes de fechar, ler até `NULL` de propósito
+(`close_and_drain`, em `parser.c`).
+
 ---
 
 ## 5. Vizinhos vs. flood fill

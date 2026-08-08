@@ -123,6 +123,17 @@ de integração/texturas de hoje. Trilha de **2 dias, 4 sessões cada**.
 - [ ] Bug: `find_player` chamava `handle_error` **e** `parse_map_grid` chamava de novo em cima — mensagem duplicada
 - [ ] Fix: `find_player` retorna o código puro, só `parse_map_grid` chama `handle_error` (mesma regra da sessão 1: quem decide, decide uma vez só)
 
+> **Atualização 08/08:** rodando `leaks -atExit -- ./test_parser` em
+> cada um desses 6 mapas (prep pra defesa), achamos que
+> `invalid03.cub` especificamente vazava 32 bytes — não tem nada a ver
+> com `free_game`, é o `first_map_line` nunca sendo liberado quando
+> `parse_meta` falha depois de `read_meta_lines` já ter lido a linha
+> do mapa. Corrigido em `parser.c`. Detalhe completo em
+> `docs/parser_concepts.md` (seção 4) e `docs/parser_explanation.md`
+> ("Por que `first_map_line` existe"). Vale rodar `leaks` nos 6 de
+> novo como parte dessa sessão a partir de agora — é rápido e teria
+> pego isso na hora.
+
 **🎮 Mini-Desafio:** prepara as 2 frases pro Fil (já estavam no plano de hoje cedo):
 - "O parser agora recusa mapas abertos, incluindo aberturas por espaço no meio do grid, não só na borda."
 - "As cores de floor/ceiling são validadas com sentinela -1 — se parse_meta retornar sucesso, você pode confiar que config.floor e config.ceil têm valores reais."
