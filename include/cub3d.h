@@ -124,7 +124,8 @@ typedef enum e_error
 	ERR_MISSING_TEX,
 	ERR_INVALID_COLOR,
 	ERR_INVALID_ID,
-	ERR_MLX
+	ERR_MLX,
+	ERR_DUPLICATE_ID
 }	t_error;
 
 /* Which of the four wall faces a ray struck, named after the direction
@@ -307,6 +308,8 @@ int			parse_meta(int fd, t_config *config, char **first_map_line);
 int			parse_cub(const char *path, t_game *game);
 int			find_player(char **map, t_player *player);
 int			pad_grid(t_map *map);
+int			dispatch_tex(const char *line, char **dest);
+int			dispatch_color(const char *line, int dest[3]);
 
 /* ========================================================================== */
 /*                                RENDERING                                   */

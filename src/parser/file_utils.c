@@ -120,3 +120,24 @@ int	parse_texture(const char *line, char **dest)
 	*dest = tmp;
 	return (ERR_NONE);
 }
+
+/**
+ * @brief Rejects a texture identifier (NO/SO/WE/EA) seen a second time.
+ *
+ * *dest is NULL until the first matching line sets it, so a non-NULL
+ * value here means this identifier already appeared once in the file.
+ * Without this check, parse_texture would silently overwrite the first
+ * path and leak the string it had allocated for it.
+ *
+ * @param line The full metadata line, forwarded to parse_texture.
+ * @param dest Pointer to the t_config field for this identifier.
+ *
+ * @return ERR_NONE on success, ERR_DUPLICATE_ID if already set, or
+ * whatever parse_texture returns on a malformed line.
+ */
+int	dispatch_tex(const char *line, char **dest)
+{
+	if (*dest)
+		return (handle_error(ERR_DUPLICATE_ID));
+	return (parse_texture(line, dest));
+}

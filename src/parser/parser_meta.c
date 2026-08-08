@@ -56,17 +56,17 @@ static int	is_map_line(const char *line)
 static int	dispatch_meta_line(const char *line, t_config *config)
 {
 	if (ft_strncmp(line, "NO ", 3) == 0)
-		return (parse_texture(line, &config->tex_north));
+		return (dispatch_tex(line, &config->tex_north));
 	else if (ft_strncmp(line, "SO ", 3) == 0)
-		return (parse_texture(line, &config->tex_south));
+		return (dispatch_tex(line, &config->tex_south));
 	else if (ft_strncmp(line, "WE ", 3) == 0)
-		return (parse_texture(line, &config->tex_west));
+		return (dispatch_tex(line, &config->tex_west));
 	else if (ft_strncmp(line, "EA ", 3) == 0)
-		return (parse_texture(line, &config->tex_east));
+		return (dispatch_tex(line, &config->tex_east));
 	else if (ft_strncmp(line, "F ", 2) == 0)
-		return (parse_color(line, config->floor));
+		return (dispatch_color(line, config->floor));
 	else if (ft_strncmp(line, "C ", 2) == 0)
-		return (parse_color(line, config->ceil));
+		return (dispatch_color(line, config->ceil));
 	return (handle_error(ERR_INVALID_ID));
 }
 
