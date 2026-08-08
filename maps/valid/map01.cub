@@ -1,7 +1,7 @@
-NO ./textures/64x64/greybox_blue_grid.png
-SO ./textures/64x64/greybox_red_grid.png
-WE ./textures/64x64/greybox_green_grid.png
-EA ./textures/64x64/greybox_yellow_grid.png
+NO ./assets/textures/greybox/greybox_blue_grid.png
+SO ./assets/textures/greybox/greybox_red_grid.png
+WE ./assets/textures/greybox/greybox_green_grid.png
+EA ./assets/textures/greybox/greybox_yellow_grid.png
 
 C 200,200,200
 F 100,100,100
