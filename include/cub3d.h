@@ -314,7 +314,7 @@ int			dispatch_color(const char *line, int dest[3]);
 /* ========================================================================== */
 /*                                RENDERING                                   */
 /* ========================================================================== */
-void		render(t_game *game);
+bool		render(t_game *game);
 void		compute(t_game *game);
 void		draw_frame(t_game *game);
 void		draw_minimap(t_game *game);
