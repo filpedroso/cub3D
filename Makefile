@@ -6,7 +6,7 @@
 #    By: fpedroso <fpedroso@student.42sp.org.br>    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/30 13:23:40 by fpedroso          #+#    #+#              #
-#    Updated: 2026/08/01 12:01:22 by fpedroso         ###   ########.fr        #
+#    Updated: 2026/08/09 13:57:00 by fpedroso         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -91,7 +91,7 @@ TEST_OBJS :=	$(OBJ_DIR)/main_test.o			 \
 all: $(NAME)
 
 $(NAME): $(OBJ) $(LIBFT) $(MLX)
-	@$(CC) $(CFLAGS) $(OBJ) $(LIBFT) $(MLX) $(GLFW) \
+	@$(CC) $(CFLAGS) -no-pie $(OBJ) $(LIBFT) $(MLX) $(GLFW) \
 		$(MLX_LINK) -o $(NAME)
 	@$(MAKE) banner
 
@@ -108,7 +108,7 @@ $(MLX):
 	@$(MAKE) -C $(MLX_DIR) --no-print-directory > /dev/null
 
 test: $(TEST_OBJS) $(LIBFT) $(MLX)
-	@$(CC) $(CFLAGS) $(TEST_OBJS) $(LIBFT) $(MLX) $(GLFW) \
+	@$(CC) $(CFLAGS) -no-pie $(TEST_OBJS) $(LIBFT) $(MLX) $(GLFW) \
 		$(MLX_LINK) -o $(TEST_NAME)
 	@echo "$(GREEN)Parser test binary built: ./$(TEST_NAME) <map.cub>$(RESET)"
 
