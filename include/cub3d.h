@@ -313,6 +313,7 @@ int			parse_map_grid(int fd, t_map *map, char *first_map_line,
 int			parse_meta(int fd, t_config *config, char **first_map_line);
 int			parse_cub(const char *path, t_game *game);
 int			find_player(char **map, t_player *player);
+int			take_row_spawns(char *row, t_player *player, int y);
 int			pad_grid(t_map *map);
 int			dispatch_tex(const char *line, char **dest);
 int			dispatch_color(const char *line, int dest[3]);
@@ -355,6 +356,7 @@ void		draw_ray(t_game *game, int index);
 
 int			handle_error(t_error error);
 bool		is_solid(char c);
+bool		is_spawn(char c);
 void		free_map(char **map);
 void		free_visited(char **visited);
 void		free_visited_partial(char **visited, int until);

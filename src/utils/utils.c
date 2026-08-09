@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   utils.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mona <mona@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: maria-ol <maria-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/28 21:23:39 by mona              #+#    #+#             */
-/*   Updated: 2026/06/07 22:54:57 by mona             ###   ########.fr       */
+/*   Updated: 2026/08/09 19:27:28 by maria-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,7 +52,7 @@ int	handle_error(t_error error)
 		"Error\nallocation with malloc failed\n",
 		"Error\nmap has invalid characters\n",
 		"Error\nmap is not closed by walls\n",
-		"Error\ninvalid number of player\n",
+		"Error\nmap must have exactly one player spawn (N/S/E/W)\n",
 		"Error\nfailed to load/missing texture: (NO/SO/WE/EA)\n",
 		"Error\ninvalid RGB\n",
 		"Error\ninvalid identifier in .cub\n",
@@ -85,4 +85,21 @@ int	handle_error(t_error error)
 bool	is_solid(char c)
 {
 	return (c != '0');
+}
+
+/**
+ * @brief Reports whether a map cell is a player spawn marker.
+ *
+ * The four cardinals are the only spawn characters the subject
+ * defines. Kept as an explicit comparison rather than a strchr over
+ * "NSEW" because strchr also matches the terminating '\0', which would
+ * report every end-of-row as a spawn.
+ *
+ * @param c The grid character to test.
+ *
+ * @return true if c is one of 'N', 'S', 'E' or 'W'.
+ */
+bool	is_spawn(char c)
+{
+	return (c == 'N' || c == 'S' || c == 'E' || c == 'W');
 }

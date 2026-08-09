@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   parser_map.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mona <mona@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: maria-ol <maria-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/28 21:23:33 by mona              #+#    #+#             */
-/*   Updated: 2026/06/07 22:55:14 by mona             ###   ########.fr       */
+/*   Updated: 2026/08/09 19:43:13 by maria-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,6 @@
  * - 'S': South position on player
  * - 'E': East position on player
  * - 'W': West position on player
- * - 'D': doors(bonus)
  * - ' ': space
  * 
  * @param map A NULL-terminated 2D array of strings representing the map.
@@ -46,7 +45,7 @@ int	has_only_valid_chars(char **map)
 			if (c == '\n')
 				break ;
 			if (c != '0' && c != '1' && c != 'N' && c != 'S' && c != 'E'
-				&& c != 'W' && c != 'D' && c != ' ')
+				&& c != 'W' && c != ' ')
 				return (0);
 			j++;
 		}
@@ -56,46 +55,42 @@ int	has_only_valid_chars(char **map)
 }
 
 /**
- * @brief Finds the player spawn in the map grid and populates t_player.
+ * @brief Requires exactly one player spawn and populates t_player.
  *
- * Searches the grid for a spawn character (N, S, E, W), stores the
- * position (x, y) and direction in the player struct, then replaces
- * the spawn character with '0' so the raycaster treats it as floor.
+ * Delegates each row to take_row_spawns, which fills player and clears
+ * the marker to '0', and sums the spawns found across the whole grid.
  *
- * The position is offset to the centre of the tile. Spawning exactly
- * on a corner leaves the DDA with a side_dist of zero on one axis.
+ * The count is what makes the map valid, not the first hit: the subject
+ * describes N/S/E/W as "the player's start position", singular, and
+ * defines no behaviour for a second one. Scanning to the end and
+ * demanding a total of exactly 1 rejects the empty map and the
+ * two-spawn map through the same test.
+ *
+ * Without this, a duplicate spawn used to survive parsing: the leftover
+ * marker stayed in the grid, and since is_solid treats everything but
+ * '0' as blocking, it silently became a phantom wall mid-room.
  *
  * @param map     NULL-terminated 2D array representing the map grid.
  * @param player  Pointer to t_player to be populated.
  *
- * @return ERR_NONE if the player was found and populated successfully.
- * @retval ERR_MAP_PLAYER If no spawn character is found in the grid.
+ * @return ERR_NONE if exactly one spawn was found and populated.
+ * @retval ERR_MAP_PLAYER If the grid holds no spawn, or more than one.
  */
 int	find_player(char **map, t_player *player)
 {
 	int	i;
-	int	j;
+	int	count;
 
 	i = 0;
+	count = 0;
 	while (map[i])
 	{
-		j = 0;
-		while (map[i][j])
-		{
-			if (map[i][j] == 'N' || map[i][j] == 'S'
-				|| map[i][j] == 'E' || map[i][j] == 'W')
-			{
-				player->x = j + 0.5;
-				player->y = i + 0.5;
-				player->dir = map[i][j];
-				map[i][j] = '0';
-				return (ERR_NONE);
-			}
-			j++;
-		}
+		count += take_row_spawns(map[i], player, i);
 		i++;
 	}
-	return (ERR_MAP_PLAYER);
+	if (count != 1)
+		return (ERR_MAP_PLAYER);
+	return (ERR_NONE);
 }
 
 /**

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   parser_grid.c                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: fpedroso <fpedroso@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: maria-ol <maria-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/28 12:00:00 by fpedroso          #+#    #+#             */
-/*   Updated: 2026/07/28 12:00:00 by fpedroso         ###   ########.fr       */
+/*   Updated: 2026/08/09 19:50:47 by maria-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -85,4 +85,46 @@ int	pad_grid(t_map *map)
 		i++;
 	}
 	return (ERR_NONE);
+}
+
+/**
+ * @brief Records every spawn marker on one row and returns how many.
+ *
+ * Scans a single row, and for each spawn found stores it in player and
+ * rewrites the cell to '0' so the raycaster sees plain floor. The
+ * position is offset to the centre of the tile: spawning exactly on a
+ * corner leaves the DDA with a side_dist of zero on one axis.
+ *
+ * It keeps scanning after the first hit instead of returning early,
+ * because the caller needs the true total to reject a map carrying two
+ * spawns. When a row does hold more than one, the last one wins the
+ * player fields, any count other than 1 makes find_player fail and the
+ * whole t_game is freed.
+ *
+ * @param row    A single grid row, modified in place.
+ * @param player Pointer to t_player to be populated.
+ * @param y      Index of this row in the grid, used as the y coordinate.
+ *
+ * @return The number of spawn markers found on this row.
+ */
+int	take_row_spawns(char *row, t_player *player, int y)
+{
+	int	x;
+	int	count;
+
+	x = 0;
+	count = 0;
+	while (row[x])
+	{
+		if (is_spawn(row[x]))
+		{
+			player->x = x + 0.5;
+			player->y = y + 0.5;
+			player->dir = row[x];
+			row[x] = '0';
+			count++;
+		}
+		x++;
+	}
+	return (count);
 }

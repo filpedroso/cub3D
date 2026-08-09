@@ -12,6 +12,23 @@
 
 #include "cub3d.h"
 
+/**
+ * @brief Converts the player's spawn cardinal into a facing angle.
+ *
+ * Angles are in degrees, growing clockwise from East at 0. That is not
+ * the usual math convention because screen space is not: the raycaster
+ * works in image coordinates, where Y grows downward. South therefore
+ * lands on +90 and North on 270, keeping the angle consistent with the
+ * direction vector the renderer derives from it via cos/sin.
+ *
+ * 'N' is the fallback rather than a fourth explicit branch: the parser
+ * only ever stores one of NSEW in player.dir, so anything reaching the
+ * final return is North by elimination.
+ *
+ * @param dir Spawn cardinal from the map ('N', 'S', 'E' or 'W').
+ *
+ * @return The facing angle in degrees, in the range [0, 360).
+ */
 static float	dir_to_angle(char dir)
 {
 	if (dir == 'E')
@@ -34,7 +51,10 @@ int	main(int argc, char **argv)
 		return (ERROR);
 	}
 	if (parse_cub(argv[1], &game) != ERR_NONE)
+	{
+		free_game(&game);
 		return (ERROR);
+	}
 	game.player.dir_ang = dir_to_angle(game.player.dir);
 	if (!render(&game))
 	{
