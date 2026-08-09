@@ -6,7 +6,7 @@
 /*   By: fpedroso <fpedroso@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/30 13:55:36 by fpedroso          #+#    #+#             */
-/*   Updated: 2026/07/28 12:00:00 by fpedroso         ###   ########.fr       */
+/*   Updated: 2026/08/09 14:04:51 by fpedroso         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,8 @@
 
 static void	on_update(void *param);
 static bool	init_or_fail(t_game *game);
+static void	mouse_move(double x, double y, void *param);
+
 
 bool	render(t_game *game)
 {
@@ -24,12 +26,32 @@ bool	render(t_game *game)
 	if (!init_or_fail(game))
 		return (false);
 	mlx_loop_hook(game->mlx, on_update, game);
+	mlx_cursor_hook(game->mlx, mouse_move, game);
 	mlx_loop(game->mlx);
 	mlx_terminate(game->mlx);
 	free_textures(game);
 	free(game->map_pixels_buf);
 	game->map_pixels_buf = NULL;
 	return (true);
+}
+
+static void	mouse_move(double x, double y, void *param)
+{
+	t_game	*game;
+	double	dx;
+	static	t_mouse_state mouse = {0};
+
+	(void)y;
+	game = param;
+	if (mouse.first)
+	{
+		mouse.last_x = x;
+		mouse.first = false;
+		return;
+	}
+	dx = x - mouse.last_x;
+	mouse.last_x = x;
+	game->player.dir_ang += dx * 0.5;
 }
 
 /*

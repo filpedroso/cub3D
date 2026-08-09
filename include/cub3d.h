@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   cub3d.h                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mona <mona@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: fpedroso <fpedroso@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/21 00:00:00 by mona              #+#    #+#             */
-/*   Updated: 2026/08/04 21:16:57 by mona             ###   ########.fr       */
+/*   Updated: 2026/08/09 13:54:41 by fpedroso         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -194,6 +194,12 @@ typedef struct s_point
 	uint32_t	x;
 	uint32_t	y;
 }	t_point;
+
+typedef struct s_mouse_state
+{
+	double	last_x;
+	bool	first;
+}	t_mouse_state;
 
 /* cos_off/sin_off are the cosine and sine of this column's fixed angular
  * offset from the view direction. They are filled once by init_fov_lut
