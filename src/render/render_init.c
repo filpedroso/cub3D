@@ -22,14 +22,21 @@ static uint32_t	pack_rgb(const int rgb[3]);
 ** floating in a letterboxed square.
 **
 ** Pure arithmetic on the parsed map and the screen macros, so it needs
-** no MLX context.
+** no MLX context. fit_w/fit_h are the box the minimap may not exceed
+** (the window fraction MINIMAP_SCALE allows) minus the margin on both
+** sides; computed here as locals rather than macros since Norminette
+** does not allow arithmetic in a #define, and nothing else needs them.
 */
 void	init_minimap_geometry(t_game *game)
 {
 	t_minimap	*mm;
 	double		scale;
+	double		fit_w;
+	double		fit_h;
 
-	scale = fmin(MM_FIT_W / game->map.cols, MM_FIT_H / game->map.rows);
+	fit_w = (double)SCR_W * MINIMAP_SCALE - 2 * MM_MARGIN;
+	fit_h = (double)SCR_H * MINIMAP_SCALE - 2 * MM_MARGIN;
+	scale = fmin(fit_w / game->map.cols, fit_h / game->map.rows);
 	if (scale <= 0.0)
 		scale = 1.0;
 	mm = &game->minimap;
@@ -58,7 +65,11 @@ static uint32_t	fit_axis(int tiles, double scale)
 bool	init_render(t_game *game)
 {
 	size_t	size;
+	double	half_fov;
 
+	half_fov = (FOV_DEG * M_PI / 180.0) / 2.0;
+	game->horizon = SCR_H / 2;
+	game->proj_plane = (SCR_W / 2.0) / tan(half_fov);
 	init_fov_lut(game);
 	game->ceil_rgba = pack_rgb(game->config.ceil);
 	game->floor_rgba = pack_rgb(game->config.floor);
@@ -102,12 +113,14 @@ static uint32_t	pack_rgb(const int rgb[3])
 void	init_fov_lut(t_game *game)
 {
 	double	offset;
+	double	half_fov;
 	int		i;
 
+	half_fov = (FOV_DEG * M_PI / 180.0) / 2.0;
 	i = 0;
 	while (i < RAY_COUNT)
 	{
-		offset = atan((2.0 * i / RAY_COUNT - 1.0) * tan(HALF_FOV));
+		offset = atan((2.0 * i / RAY_COUNT - 1.0) * tan(half_fov));
 		game->rays[i].cos_off = cos(offset);
 		game->rays[i].sin_off = sin(offset);
 		i++;

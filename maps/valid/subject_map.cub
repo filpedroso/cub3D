@@ -1,7 +1,7 @@
-NO assets/textures/north.png
-SO assets/textures/south.png
-WE assets/textures/west.png
-EA assets/textures/east.png
+NO assets/textures/kenney_retro/north.png
+SO assets/textures/kenney_retro/south.png
+WE assets/textures/kenney_retro/west.png
+EA assets/textures/kenney_retro/east.png
 
 F 220,100,0
 C 225,30,0

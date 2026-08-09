@@ -35,6 +35,7 @@
 				ERR_INVALID_COLOR ← cor RGB inválida
 				ERR_INVALID_ID    ← identificador desconhecido no .cub
 				ERR_MLX           ← problema de inicialização da MLX42
+				ERR_DUPLICATE_ID  ← NO/SO/WE/EA/F/C repetido no .cub
  *
  * @return Returns ERROR (-1) to indicate error status for main() exit code.
  * @note ERR_NONE (index 0) is NULL and should never be passed to this function.
@@ -55,7 +56,8 @@ int	handle_error(t_error error)
 		"Error\nfailed to load/missing texture: (NO/SO/WE/EA)\n",
 		"Error\ninvalid RGB\n",
 		"Error\ninvalid identifier in .cub\n",
-		"Error\nMLX42 initialization failed\n"
+		"Error\nMLX42 initialization failed\n",
+		"Error\nduplicate identifier in .cub\n"
 	};
 
 	if (error > 0 && error < (int)(sizeof(messages) / sizeof(messages[0])))

@@ -2,7 +2,7 @@
 
 # cub3D
 
-## Description
+## 📖 Description
 
 `cub3D` is a first-person 3D engine written in C, inspired by Wolfenstein
 3D — one of the founding games of the FPS genre. The project implements
@@ -22,7 +22,7 @@ player position, floor/ceiling colors, per-orientation textures) before
 any rendering happens, following 42's project standards (Norminette, no
 leaks, no crashes).
 
-## Instructions
+## ⚙️ Instructions
 
 ### Dependencies
 
@@ -64,12 +64,14 @@ map. Invalid maps (open walls, malformed colors, missing textures,
 etc.) are rejected with a specific error message — see examples in
 `maps/invalid/`.
 
-### Controls
+### 🎮 Controls
 
 | Key                     | Action                                |
 |-------------------------|---------------------------------------|
 | `↑` / `↓`               | Move forward / backward               |
 | `←` / `→`               | Turn the camera left / right          |
+| `W` / `S`               | Move forward / backward (mirrors `↑`/`↓`) |
+| `A` / `D`               | Strafe left / right, without turning  |
 | `M`                     | Toggle minimap display                |
 | `R`                     | Toggle ray display (debug)            |
 | `T`                     | Toggle between textures and debug view|
@@ -78,10 +80,10 @@ etc.) are rejected with a specific error message — see examples in
 ### `.cub` file format
 
 ```
-NO ./textures/north.png
-SO ./textures/south.png
-WE ./textures/west.png
-EA ./textures/east.png
+NO ./assets/textures/kenney_retro/north.png
+SO ./assets/textures/kenney_retro/south.png
+WE ./assets/textures/kenney_retro/west.png
+EA ./assets/textures/kenney_retro/east.png
 
 F 220,100,0
 C 225,30,0
@@ -99,7 +101,7 @@ C 225,30,0
   starting position and facing direction, `D` door (bonus), space/empty
   outside the map bounds. The map must be fully enclosed by walls.
 
-## Technical Overview
+## 🔨 Technical Overview
 
 ### Raycasting Engine
 
@@ -123,10 +125,28 @@ The 3D view is built one vertical screen column at a time:
 
 ### Textures
 
-* Four CC0 wall textures (stone, brick, timber) from Kenney.nl's *Retro Textures Fantasy* pack, cropped to 64x64 — see [Resources](#resources) below
-* A visual/thematic pass on the textures is planned as a follow-up, once the README and core features are settled
+`assets/textures/` is organized by pack, one folder per source, each
+with its own `CREDITS.txt`:
 
-## Resources
+* `kenney_retro/` — the four CC0 walls (stone, brick, timber) from
+  Kenney.nl's *Retro Textures Fantasy* pack, used by `subject_map.cub`
+* `greybox/` — flat, high-contrast placeholder walls (11 colors ×
+  grid/solid variants), useful for spotting perspective or texture-
+  mapping bugs without a "real" texture's detail getting in the way
+* `lodev_classic/` — the recognizable stone/eagle set from the
+  classic Lodev raycasting tutorial (see [Resources](#resources))
+* `caquinho/` — a *piso de caquinho* (broken-tile terrazzo, a staple
+  of Brazilian architecture) turned into a wall texture: one original
+  plus 6 recolors (blue, green, pink, lilac, gray, salmon), all
+  generated from the same source image via a hue-rotation script —
+  same shapes and grout lines, different color story per variant
+
+Several `maps/valid/*.cub` files exist mainly to show these packs off
+in combination (`caquinho_pilares.cub`, `greybox_l.cub`,
+`lodev_map01.cub`, etc.) rather than to test any specific parser edge
+case.
+
+## 📚 Resources
 
 ### References and documentation
 
@@ -162,7 +182,21 @@ pair-programming aid throughout the project, mainly for:
 - **Asset curation** — researching and selecting CC0 (public domain)
   wall textures from Kenney.nl's *Retro Textures Fantasy* pack
   ([kenney.nl/assets/retro-textures-fantasy](https://kenney.nl/assets/retro-textures-fantasy)),
-  cropped to 64x64 (see `assets/textures/CREDITS.txt`).
+  cropped to 64x64, plus organizing `assets/textures/` by pack once
+  more sources (Lodev's classic set, a custom terrazzo texture) were
+  added. The `caquinho/` palette variants were generated with a small
+  HSV hue-rotation script, not hand-edited pixel by pixel.
+- **Pre-defense QA pass** — working through the mandatory-part
+  checklist end to end and finding real bugs: `W`/`A`/`S`/`D` movement
+  was entirely missing (only arrow keys existed); a repeated
+  identifier in a `.cub` file (e.g. two `NO` lines) was silently
+  accepted instead of erroring; a failed texture load printed the
+  right error message but still exited `0` instead of a failure code,
+  because `render()` was `void` and nothing checked whether it had
+  succeeded. Also caught a genuine memory leak with macOS's `leaks`
+  tool (not guessed) — a map line allocated by `get_next_line` wasn't
+  freed on one specific error path — and fixed it, verifying 0 leaks
+  across every valid and invalid test map afterward.
 
 The AI did not write the final ray-casting logic or the projection math
 — those parts were implemented and debugged by hand by the pair, with

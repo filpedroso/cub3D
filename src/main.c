@@ -36,7 +36,11 @@ int	main(int argc, char **argv)
 	if (parse_cub(argv[1], &game) != ERR_NONE)
 		return (ERROR);
 	game.player.dir_ang = dir_to_angle(game.player.dir);
-	render(&game);
+	if (!render(&game))
+	{
+		free_game(&game);
+		return (ERROR);
+	}
 	free_game(&game);
 	return (SUCCESS);
 }

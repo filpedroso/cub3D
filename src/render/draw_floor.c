@@ -12,7 +12,7 @@
 
 #include "cub3d.h"
 
-static t_dbl_coord	grid_eps(t_column *col, double row_dist);
+static t_dbl_coord	grid_eps(t_game *game, t_column *col, double row_dist);
 static uint32_t		grid_color(t_dbl_coord eps, t_dbl_coord world);
 
 /*
@@ -33,14 +33,14 @@ void	draw_floor(t_game *game, t_column *col)
 	double		row_dist;
 	int32_t		y;
 
-	y = (int32_t)fmax(col->end + 1, HORIZON + 1);
+	y = (int32_t)fmax(col->end + 1, game->horizon + 1);
 	while (y < SCR_H)
 	{
-		row_dist = (0.5 * SCR_H) / (y - (double)HORIZON);
+		row_dist = (0.5 * SCR_H) / (y - (double)game->horizon);
 		world.x = game->player.x + row_dist * col->plane.x;
 		world.y = game->player.y + row_dist * col->plane.y;
 		mlx_put_pixel(game->main_img, col->x, y,
-			grid_color(grid_eps(col, row_dist), world));
+			grid_color(grid_eps(game, col, row_dist), world));
 		y++;
 	}
 }
@@ -58,14 +58,14 @@ void	draw_floor(t_game *game, t_column *col)
 **
 ** The 0.45 cap stops the floor right under the player flooding pink.
 */
-static t_dbl_coord	grid_eps(t_column *col, double row_dist)
+static t_dbl_coord	grid_eps(t_game *game, t_column *col, double row_dist)
 {
 	t_dbl_coord	eps;
 	double		depth;
 	double		lat;
 
 	depth = GRID_PX * row_dist * row_dist / SCR_H;
-	lat = 0.5 * GRID_PX * row_dist / PROJ_PLANE;
+	lat = 0.5 * GRID_PX * row_dist / game->proj_plane;
 	eps.x = fmin(0.45, fmax(fabs(col->plane.x) * depth, lat));
 	eps.y = fmin(0.45, fmax(fabs(col->plane.y) * depth, lat));
 	return (eps);

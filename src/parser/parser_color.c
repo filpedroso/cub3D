@@ -99,3 +99,23 @@ int	parse_color(const char *line, int dest[3])
 	free_map(parts);
 	return (ERR_NONE);
 }
+
+/**
+ * @brief Rejects a color identifier (F/C) seen a second time.
+ *
+ * dest[0] holds the -1 sentinel until the first matching line fills it
+ * in, so a value other than -1 here means this identifier already
+ * appeared once in the file.
+ *
+ * @param line The full metadata line, forwarded to parse_color.
+ * @param dest The int[3] destination (config->floor or config->ceil).
+ *
+ * @return ERR_NONE on success, ERR_DUPLICATE_ID if already set, or
+ * whatever parse_color returns on a malformed line.
+ */
+int	dispatch_color(const char *line, int dest[3])
+{
+	if (dest[0] != -1)
+		return (handle_error(ERR_DUPLICATE_ID));
+	return (parse_color(line, dest));
+}

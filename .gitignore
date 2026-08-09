@@ -2,6 +2,7 @@
 cub3D
 *.out
 a.out
+test_parser
 
 # Object files
 *.o
