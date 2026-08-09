@@ -1,19 +1,19 @@
-# 📖 Plano de Estudo — Parser do cub3D (feat/parser-todo)
+# 📖 Plano de Estudo — Parser do cub3D
 
-**Adaptado pro mesmo método do STUDY_PLAN.md do philosophers** (sessões
-curtas, gamificação, pausas programadas — bom pra manter o foco).
+Roteiro de revisão pra defesa. **Este arquivo não explica nada** — ele
+diz o que ler, em que ordem, e o que praticar depois de cada leitura.
 
-Cobre **tudo** que foi feito na `feat/parser-todo`: as 4 funções do
-`parser_todo.md` original, as refatorações de norminette, e a sessão
-de integração/texturas de hoje. Trilha de **2 dias, 4 sessões cada**.
+O conteúdo mora em dois lugares:
 
-> **Atualizado em 04/08:** escrito em 11/07, quando `feat/parser-todo`
-> ainda não tinha sido mergeada. Desde então o merge com `feat/render`
-> aconteceu de verdade (não só no teste em `scratch/integration`), e
-> as duas maiores pendências do Dia 2 (mapa dinâmico e loading de
-> textura) já foram resolvidas — as Sessões 6 e 7 foram ajustadas pra
-> refletir isso; use-as pra revisar/explicar o que já está pronto, não
-> como decisão em aberto.
+| documento | o que tem |
+|---|---|
+| [`../README.md`](../README.md#-execution-flow) | O fluxo do **projeto inteiro** — `main` → parser → render → saída — e a árvore de arquivos |
+| [`parser_explanation.md`](parser_explanation.md) | O parser do cub3D: cada arquivo, função, validação e regra de memória |
+| [`parser_concepts.md`](parser_concepts.md) | Os conceitos gerais por trás (não específicos do cub3D) |
+
+**Como usar:** cada sessão aponta a seção exata dos dois. Leia o
+conceito **antes** do código — o conceito explica *por quê*, o
+explanation mostra *como ficou aqui*.
 
 ---
 
@@ -21,170 +21,103 @@ de integração/texturas de hoje. Trilha de **2 dias, 4 sessões cada**.
 
 ```
 15-20 min → ESTUDO ATIVO (ler + anotar)
-5-10 min  → PRÁTICA (testar código / explicar em voz alta)
+5-10 min  → PRÁTICA (rodar / explicar em voz alta)
 5 min     → PAUSA (levantar, água, alongar)
 ```
 
 ⏰ Timer visível · ✅ marca cada sessão · 📱 celular longe
 
----
-
-## 🗓️ DIA 1: O Parser em Si
-
-### ✅ Sessão 1: `parse_color` (25 min)
-**OBJETIVO:** explicar como `"F 220,100,0"` vira `dest[3] = {220,100,0}`
-
-**📖 Fazer:**
-1. Abrir `src/parser/parser_color.c` (2 min)
-2. Traçar na cabeça: a string avança (`line += 2`), `ft_split(line, ',')`
-   — o que retorna pra `"220,100,0"`? E pra `"220,,0"`? E pra `""`? (10 min)
-3. Achar `check_color_part` e `color_error` — quem chama `handle_error`
-   e quem não chama (8 min)
-4. Explicar em voz alta a resposta (5 min)
-
-**✍️ Anotar:**
-- [ ] `count_parts`, `check_color_part`, `parse_color` — 3 funções, 1 arquivo
-- [ ] `check_color_part` retorna o código de erro **cru** — não é dono do `parts`
-- [ ] `parse_color`/`color_error` são donos do `parts` alocado → só eles liberam e chamam `handle_error`
-- [ ] Regra geral: **quem aloca, libera** (ownership)
-
-**🎮 Mini-Desafio:** sem olhar o código, lista as 3 validações que cada parte da cor passa (dígito → range 0-255 → 3 partes exatas)
+**Regra que vale mais que o resto:** se você não consegue explicar em
+voz alta sem olhar, você não revisou — você leu. A prática de cada
+sessão é a parte que conta.
 
 ---
 
-### ✅ Sessão 2: `has_closed_walls` (25 min)
-**OBJETIVO:** explicar por que checar vizinhos ≠ checar perímetro
+## 🗓️ Trilha — 7 sessões
 
-**📖 Fazer:**
-1. Abrir `maps/valid/map01.cub`, escolher um `0` no meio do mapa,
-   achar os 4 vizinhos na mão (5 min)
-2. Escolher um `0` numa borda de linha mais curta — o que
-   `is_valid_neighbor` faz quando `col >= ft_strlen(map[row])`? (10 min)
-3. Ler `src/parser/parser_walls.c` — `is_valid_neighbor` →
-   `check_cell_neighbors` → `has_closed_walls` (10 min)
+### ✅ Sessão 0: Onde o parser se encaixa (15 min)
 
-**✍️ Anotar:**
-- [ ] so_long: mapa retangular, basta checar o perímetro
-- [ ] cub3D: linhas de tamanho diferente, então checa **vizinho por célula**
-- [ ] `has_closed_walls` roda **antes** de `find_player` (player ainda não virou `'0'`)
-- [ ] Detecta aberturas na borda **e** por espaço no meio do grid
+**OBJETIVO:** situar o parser no projeto inteiro, antes de entrar nele.
 
-**🎮 Mini-Desafio:** por que usar `ft_strlen(map[row])` em vez de `map->cols`? (dica: sessão 3)
+Esta é a única sessão que **não** é sobre o parser. Ela existe porque na
+defesa a primeira pergunta costuma ser sobre o programa todo, não sobre
+uma função — e porque é muito mais fácil estudar uma peça sabendo onde
+ela encaixa.
 
----
+**📖 Ler:**
+- README, [**Execution Flow**](../README.md#-execution-flow) — o fluxo
+  de `argv[1]` até a saída
+- README, [**Project Structure**](../README.md#-project-structure) — só
+  passar o olho no `src/`
 
-### ⏸️ PAUSA LONGA: 15-30 min
+**✋ Praticar:**
+1. **Fechar o README.** Desenhar as três fases numa folha: o que roda
+   **antes** do `mlx_loop`, o que roda **dentro** dele, e o que roda
+   **depois** que ele retorna
+2. Marcar no desenho onde o parser começa e onde ele termina — e
+   perceber que ele é uma caixa só, no topo
 
----
+**✍️ Fixar:**
+- [ ] Três fases: parse → init → loop → teardown
+- [ ] Tudo antes do `mlx_loop` roda **uma vez**; o `on_update` roda **por frame**
+- [ ] `load_textures` vem antes do `config_mlx` — `mlx_load_png` só
+      decodifica bytes, não precisa de `mlx_t*`
+- [ ] `init_minimap_geometry` roda antes da MLX existir: é aritmética
+      pura sobre o mapa já parseado
+- [ ] Ordem do teardown: `mlx_terminate` → `free_textures` →
+      `map_pixels_buf` → `free_game`
+- [ ] O parser é uma caixa só do fluxo, e nada depois dele revalida nada
 
-### ✅ Sessão 3: `map->cols` + refatoração por norminette (25 min)
-**OBJETIVO:** entender o que mudou depois do plano original
-
-**📖 Fazer:**
-1. Abrir `src/parser/parser_map.c` — achar `update_max_cols` e
-   `build_map_grid` (8 min)
-2. Responder o mini-desafio da sessão 2: `map->cols` não existia
-   quando `has_closed_walls` foi escrita — por isso o TODO ficou
-   pendente e depois foi fechado (5 min)
-3. Ler `docs/parser_session_log.md`, seção "Reorganização por
-   norminette" — a tabela antes/depois dos arquivos (7 min)
-4. Explicar em voz alta pro Fil: "por que isso está em duas funções
-   e não uma?" sobre `validate_config`/`read_meta_lines`/`build_map_grid` (5 min)
-
-**✍️ Anotar:**
-- [ ] `update_max_cols`: rastreia a linha mais longa (mapa não é retangular)
-- [ ] Motivo da refatoração: limite de 5 funções/arquivo (`TOO_MANY_FUNCS`)
-- [ ] `parser_color.c` e `parser_walls.c` são arquivos **novos**, extraídos de `parser_meta.c`/`parser_map.c`
-- [ ] Resultado: norminette 100% limpa no parser
-
-**🎮 Mini-Desafio:** explica as duas funções sem olhar o código — o critério é responsabilidade única, não tamanho
+**🎮 Desafio:** em 60 segundos, sem olhar — o que acontece entre digitar
+`./cub3D maps/valid/map01.cub` e a janela aparecer?
 
 ---
 
-### ✅ Sessão 4: `free_game` + mapas de teste (25 min)
-**OBJETIVO:** saber os 6 cenários de erro cobertos e o bug do double-print
+### ✅ Sessão 1: O pipeline do parser (25 min)
 
-**📖 Fazer:**
-1. Ler `src/utils/free_utils.c` — `free_game` (5 min)
-2. Rodar `make test` e testar os 6 mapas inválidos (10 min):
-   ```
-   ./test_parser maps/invalid/invalid02.cub  # ERR_MAP_PLAYER
-   ./test_parser maps/invalid/invalid03.cub  # ERR_MISSING_TEX
-   ./test_parser maps/invalid/invalid04.cub  # ERR_INVALID_ID
-   ./test_parser maps/invalid/invalid05.cub  # ERR_MAP_OPEN (borda)
-   ./test_parser maps/invalid/invalid06_space.cub  # ERR_MAP_OPEN (espaço interno)
-   ./test_parser maps/valid/subject_map.cub  # sucesso — exemplo oficial
-   ```
-3. Ler `docs/parser_session_log.md`, seção "Bug encontrado e
-   corrigido: mensagem de erro duplicada" (10 min)
+**OBJETIVO:** desenhar o fluxo do parser de ponta a ponta sem consultar.
 
-**✍️ Anotar:**
-- [ ] `free_game` libera as 4 texturas + `map.grid`, chamado nos 2 caminhos (sucesso e erro)
-- [ ] Bug: `find_player` chamava `handle_error` **e** `parse_map_grid` chamava de novo em cima — mensagem duplicada
-- [ ] Fix: `find_player` retorna o código puro, só `parse_map_grid` chama `handle_error` (mesma regra da sessão 1: quem decide, decide uma vez só)
+**📖 Ler:**
+- `explanation` §1 (o que o parser entrega) e §4 (pipeline completo)
 
-> **Atualização 08/08:** rodando `leaks -atExit -- ./test_parser` em
-> cada um desses 6 mapas (prep pra defesa), achamos que
-> `invalid03.cub` especificamente vazava 32 bytes — não tem nada a ver
-> com `free_game`, é o `first_map_line` nunca sendo liberado quando
-> `parse_meta` falha depois de `read_meta_lines` já ter lido a linha
-> do mapa. Corrigido em `parser.c`. Detalhe completo em
-> `docs/parser_concepts.md` (seção 4) e `docs/parser_explanation.md`
-> ("Por que `first_map_line` existe"). Vale rodar `leaks` nos 6 de
-> novo como parte dessa sessão a partir de agora — é rápido e teria
-> pego isso na hora.
+**✋ Praticar:**
+1. **Fechar o doc.** Desenhar num papel: `main` → `parse_cub` →
+   `parse_meta` → `parse_map_grid`, com os erros saindo de cada caixa
+2. Conferir com o diagrama e circular o que faltou
 
-**🎮 Mini-Desafio:** prepara as 2 frases pro Fil (já estavam no plano de hoje cedo):
-- "O parser agora recusa mapas abertos, incluindo aberturas por espaço no meio do grid, não só na borda."
-- "As cores de floor/ceiling são validadas com sentinela -1 — se parse_meta retornar sucesso, você pode confiar que config.floor e config.ceil têm valores reais."
+**✍️ Fixar:**
+- [ ] As 4 validações do mapa **em ordem**, e por que essa ordem
+- [ ] `pad_grid` é o último de propósito
+- [ ] `close_and_drain` roda em todos os caminhos
+- [ ] As 7 pós-condições — o que o render pode assumir sem checar
+
+**🎮 Desafio:** explique em voz alta por que `has_closed_walls` vem
+antes de `find_player`.
 
 ---
 
-## 🗓️ DIA 2: Integração & Próximos Passos
+### ✅ Sessão 2: Metadados (25 min)
 
-### ✅ Sessão 5: Merge e conflito silencioso (25 min)
-**OBJETIVO:** explicar a diferença entre conflito de texto e conflito semântico
+**OBJETIVO:** explicar ordem livre, duplicata e as duas sentinelas.
 
-**📖 Fazer:**
-1. Ler `docs/next_session_todo.md`, seção 1 "O que achamos" (10 min)
-2. Achar no histórico o commit `b24418f` (`scratch/integration`) e
-   ler a mensagem completa: `git show b24418f --stat` (5 min)
-3. Explicar em voz alta: por que o `git merge` não marcou conflito
-   no rename `dir` → `dir_c`, mas o build quebrou mesmo assim? (10 min)
+**📖 Ler:**
+- `concepts` §3 (valores sentinela) — **antes** do código
+- `explanation` §6 inteira
 
-**✍️ Anotar:**
-- [ ] Conflito de texto (Makefile `FILES`): as duas branches mudaram **a mesma linha** → git avisa
-- [ ] Conflito silencioso (`dir`→`dir_c`): o Fil renomeou um campo que o lado da Mona nunca tocava → git faz merge automático, mas quem *usa* o campo antigo quebra na compilação
-- [ ] Lição: `git merge` sem conflito ≠ merge seguro. Sempre builda depois.
-- [ ] Bônus: bug da vírgula faltando em `utils.c` (concatenação de string literals em C) — só na branch do Fil, não é da Mona
+**✋ Praticar:**
+1. Abrir `parser_meta.c` e acompanhar uma linha `NO ./x.png` do
+   `read_meta_lines` até o `ft_strdup`
+2. Responder sem olhar: por que `is_map_line` checa `line[1]` quando o
+   primeiro char é cardeal?
 
-**🎮 Mini-Desafio:** explica pra alguém (ou em voz alta) por que "compilou sem erro" não é suficiente prova de que um merge deu certo
+**✍️ Fixar:**
+- [ ] `NO`/`SO`/`WE`/`EA` começam com cardeal — daí o `line[1]`
+- [ ] Ordem das 6 chaves é livre; repetir é `ERR_DUPLICATE_ID`
+- [ ] Uma sentinela responde "veio?" **e** "veio duas vezes?"
+- [ ] Parsing valida o *path*; quem abre o PNG é o `load_textures`
 
----
-
-### ✅ Sessão 6: `MAP_W`/`MAP_H` fixo vs `t_map` dinâmico — RESOLVIDO (25 min)
-**OBJETIVO:** entender a decisão que foi tomada e onde ela aparece hoje no código
-
-> Quando essa sessão foi escrita isso ainda era pauta de call. Já foi
-> decidido e implementado: venceu o `t_map` dinâmico, o `gridmap`
-> fixo não existe mais em lugar nenhum do código.
-
-**📖 Fazer:**
-1. Ler `docs/next_session_todo.md`, item "O que ainda precisa de
-   decisão conjunta" — só pra ver o estado *antes* da decisão (5 min)
-2. Conferir que não sobrou nenhum `gridmap`/`MAP_W`/`MAP_H`:
-   `grep -rn "gridmap\|MAP_W\|MAP_H" src/` (deve voltar vazio) (5 min)
-3. Ler `draw_minimap.c`, `update_pl_pos.c`, `raycasting.c` e achar
-   onde cada um lê `game->map.grid`/`game->map.rows`/`game->map.cols` (10 min)
-4. Explicar em voz alta: como esses três arquivos ficaram sabendo o
-   tamanho real do mapa sem nenhum `MAP_W`/`MAP_H`? (5 min)
-
-**✍️ Anotar:**
-- [ ] `game.map` = struct dinâmica (`char **grid; int rows; int cols;`), populada pelo parser
-- [ ] Não sobrou nenhum array fixo — todo acesso ao grid passa por `game->map`
-- [ ] A decisão não foi um meio-termo: o scaffold do Fil foi substituído, não mantido em paralelo
-
-**🎮 Mini-Desafio:** explica pro Fil (ou em voz alta) como um mapa de 21x13 (`map01.cub`) e um mapa de outro tamanho qualquer rodam com o mesmo binário, sem recompilar nada
+**🎮 Desafio:** o que aconteceria se `NO` aparecesse duas vezes e o
+`dispatch_tex` não existisse? (dica: não é só "sobrescreve")
 
 ---
 
@@ -192,72 +125,163 @@ de integração/texturas de hoje. Trilha de **2 dias, 4 sessões cada**.
 
 ---
 
-### ✅ Sessão 7: Texturas — parsing vs loading vs rendering — IMPLEMENTADO (25 min)
-**OBJETIVO:** saber explicar a fronteira entre as 3 camadas, como ela ficou de verdade
+### ✅ Sessão 3: Geometria do mapa (25 min)
 
-> Quando essa sessão foi escrita, loading e rendering eram só um
-> plano (`docs/next_session_todo.md`). As duas camadas existem agora
-> em `src/render/texture_load.c` e `src/render/draw_tex_view.c`, e o
-> design final é mais simples que o planejado: `t_game.tex[4]`
-> indexado pelo enum `t_face`, em vez de 4 campos `img_*` separados
-> em `t_config`.
+**OBJETIVO:** explicar por que vizinho ≠ perímetro.
 
-**📖 Fazer:**
-1. Ler `assets/textures/CREDITS.txt` e olhar as 4 texturas (5 min)
-2. Ler `src/render/texture_load.c` inteiro — `load_textures`,
-   `load_one`, `free_textures` (10 min)
-3. Explicar em voz alta a diferença entre as 3 camadas, agora
-   apontando pro código real de cada uma (10 min)
+**📖 Ler:**
+- `concepts` §5 (vizinhos vs flood fill) — **antes** do código
+- `explanation` §7, até `has_closed_walls`
 
-**✍️ Anotar:**
-- [ ] **Parsing** (`src/parser/`): valida o *path* da textura, extensão `.png` — não abre o arquivo
-- [ ] **Loading** (`src/render/texture_load.c`): `load_textures(t_game *game)` chama `mlx_load_png` pras 4 e guarda em `game->tex[4]` (`mlx_texture_t*`) — roda antes de `config_mlx`, não precisa de `mlx_t*` ainda
-- [ ] **Rendering** (`src/render/draw_tex_view.c`): `tex[col->face]` escolhe a textura certa por coluna, e faz o sampling pixel a pixel
-- [ ] `free_textures` é idempotente (chamado tanto no caminho de erro de `load_one` quanto no shutdown normal em `render.c`) — evita duplicar a lógica de free em dois lugares
+**✋ Praticar:**
+1. Abrir `maps/valid/subject_map.cub`, escolher um `0` numa linha curta
+   e achar os 4 vizinhos **na mão**
+2. Rodar `invalid05_open_border` e `invalid06_open_space`, e apontar
+   **qual das três condições** do `is_valid_neighbor` pegou cada um
 
-**🎮 Mini-Desafio:** explica pro Fil por que `t_game.tex[4]` indexado por `t_face` (`F_NORTH`, `F_SOUTH`, `F_WEST`, `F_EAST`) evita o branch de 4 vias que 4 campos nomeados (`img_north`/`img_south`/...) exigiriam no render
+**✍️ Fixar:**
+- [ ] so_long retangular = perímetro; cub3D ragged = vizinho por célula
+- [ ] `ft_strlen(map[row])` e não `map->cols` — e por quê
+- [ ] Linha de tamanho diferente **não** é erro
+- [ ] Só cardeais, sem diagonal — limitação assumida
+
+**🎮 Desafio:** desenhe um mapa de 3 linhas que passe no
+`has_only_valid_chars` e reprove no `has_closed_walls`.
 
 ---
 
-### ✅ Sessão 8: Simular a call com o Fil (25 min)
-**OBJETIVO:** chegar na call com as explicações prontas, não improvisadas
+### ✅ Sessão 4: Spawn e coordenadas (25 min)
 
-**📖 Fazer:**
-1. Reler o resumo do PR (descrição que foi colada no GitHub) (5 min)
-2. Timer de 4 min: explicar o que o parser faz, do zero, como se
-   o Fil não soubesse nada
-3. Timer de 4 min: explicar o achado do `dir_c` e por que git não
-   avisou
-4. Timer de 4 min: explicar `MAP_W`/`MAP_H` vs dinâmico e por que
-   isso é decisão dele também
-5. Timer de 4 min: propor o plano de `mlx_load_png` (quem faz o quê)
-6. Timer de 4 min: perguntas em aberto pra fazer pra ele (main.c real, timing do merge)
+**OBJETIVO:** explicar o "exatamente um" e o `+ 0.5`.
 
-**✍️ Gravar-se explicando (celular):** depois ouve e vê o que ficou confuso
+**📖 Ler:**
+- `concepts` §9 (coordenada contínua sobre grid discreto)
+- `explanation` §7, de `find_player` até `pad_grid`
 
----
+**✋ Praticar:**
+1. Rodar `invalid07_two+_spawns.cub`
+2. Desenhar um tile no papel com as coordenadas `5.0` e `5.5`, e
+   calcular **à mão** a caixa de colisão nos dois casos com
+   `PL_RADIUS = 0.25`
 
-## 🎯 Checklist de Domínio
+**✍️ Fixar:**
+- [ ] Contar tudo rejeita "zero" e "dois" com o mesmo teste
+- [ ] Antes: spawn duplicado virava parede fantasma (`is_solid` = `c != '0'`)
+- [ ] Coordenada inteira = quina do tile, não centro
+- [ ] `+0.5` → caixa inteira dentro da célula do spawn
+- [ ] Sem `+0.5` → `side_dist = 0` → `hit_dist = 0` → divisão por zero
 
-### Parser (Dia 1)
-- [ ] Explico `parse_color` e a regra de ownership do `parts`
-- [ ] Explico por que `has_closed_walls` checa vizinho, não perímetro
-- [ ] Sei por que `map->cols` não existia antes e o que ele resolve
-- [ ] Explico o bug do double-print e a correção
-- [ ] Sei rodar `make test` e interpretar os 6 cenários de erro
-
-### Integração (Dia 2)
-- [ ] Explico a diferença entre conflito de texto e conflito silencioso
-- [ ] Sei apontar, no código atual, as 3 leituras de `game->map` que antes eram `gridmap` fixo
-- [ ] Explico a fronteira parsing → loading → rendering pra texturas, com o design real (`tex[4]`)
-- [ ] Tenho as perguntas em aberto prontas pra call
+**🎮 Desafio:** explique o `+ 0.5` pro Fil usando **só** o desenho.
 
 ---
 
-## 💡 Dicas (as mesmas que funcionaram no philosophers)
+### ⏸️ PAUSA LONGA: 15-30 min
 
-**✅ FAÇA:** sessões curtas (15-25 min), mude de ambiente, explique em
-voz alta, gamifique (1 sessão = 1 ponto, meta 8 pontos), timer visível
+---
+
+### ✅ Sessão 5: Memória (25 min)
+
+**OBJETIVO:** defender a gestão de memória com número na mão.
+
+**📖 Ler:**
+- `concepts` §2 (ownership) e §10 (categorias de leak)
+- `explanation` §9 inteira
+
+**✋ Praticar:**
+1. Rodar valgrind nos 7 mapas inválidos e confirmar
+   `0 bytes in 0 blocks` em todos (comandos no `explanation` §11)
+2. Rodar num mapa **válido**, ver os ~313 KB `still reachable`, e
+   treinar a frase de explicação
+
+**✍️ Fixar:**
+- [ ] `still reachable` ≠ leak; vem do MLX42/GLFW/X11
+- [ ] O critério real é `definitely` / `indirectly lost`
+- [ ] `ft_memset` no `main` é o que torna `free_game` seguro em qualquer ponto
+- [ ] `close_and_drain` existe pelo buffer estático do GNL
+- [ ] Demonstrar memória **sempre** com mapa inválido
+
+**🎮 Desafio:** a frase de 15 segundos pro avaliador —
+*"still reachable é o MLX42; o nosso está em zero. Posso mostrar num
+mapa inválido, que é o único jeito de rodar sem inicializar a MLX."*
+
+---
+
+### ✅ Sessão 6: Simular a defesa (25 min)
+
+**OBJETIVO:** responder em voz alta, cronometrado, sem consultar.
+
+**✋ Praticar:** passar pelo banco de perguntas abaixo. Marque as que
+travaram e releia **só** a seção correspondente.
+
+**📖 Antes de encerrar:** ler `explanation` §12 (pontos fracos
+conhecidos) — é melhor você citar antes de perguntarem.
+
+---
+
+## 🎤 Banco de perguntas
+
+Resposta curta aqui; o detalhe está na seção indicada.
+
+| pergunta | resposta em 1 linha | detalhe |
+|---|---|---|
+| Como garante que o mapa está fechado? | Vizinho de cada célula andável, não perímetro — porque as linhas têm tamanhos diferentes | `expl` §7 |
+| E se as linhas tiverem tamanhos diferentes? | É válido; o subject não exige retangular. O `pad_grid` iguala **depois** de validar | `expl` §7 |
+| Por que padding depois da validação? | Pra não validar espaços que o meu próprio código inventou | `conc` §11 |
+| E se tiver dois players? | Recuso. Conto todos e exijo exatamente 1 — mesmo teste rejeita zero e dois | `expl` §7 |
+| Por que `+ 0.5` na posição? | Coordenada inteira é a quina do tile. Sem isso, colisão espalha por 4 células e o DDA começa com distância zero | `conc` §9 |
+| Textura repetida duas vezes? | `ERR_DUPLICATE_ID` — sem a guarda, o segundo `strdup` sobrescreve e vaza o primeiro | `expl` §6 |
+| As chaves precisam estar em ordem? | Não. Qualquer ordem, qualquer número de linhas vazias. Só o mapa tem que ser o último bloco | `expl` §6 |
+| Onde validam se a textura existe no disco? | Não no parser. O parser valida o *path*; quem abre é o `load_textures` | `expl` §10 |
+| Tem leak? | Não. `definitely lost: 0`. O `still reachable` de mapa válido é MLX42/GLFW/X11 | `conc` §10 |
+| Por que `close_and_drain` e não `close`? | O GNL tem buffer estático por fd que só é liberado ao ler EOF | `conc` §4 |
+| Por que `take_row_spawns` não fica junto do `find_player`? | Norminette: `parser_map.c` já estava em 5/5 funções | `expl` §3 |
+| O que é esse `'D'` no `has_closed_walls`? | Código morto — o `has_only_valid_chars` não aceita `'D'` | `expl` §12 |
+| E se o `malloc` falhar? | `ERR_MALLOC` e o `main` chama `free_game`. Tem um buraco conhecido no `ft_append_line`, só em OOM real | `expl` §12 |
+| Por que a mensagem de erro não sai duplicada? | Só a função que decide chama `handle_error`; as auxiliares retornam código cru | `expl` §8 |
+
+---
+
+## 📊 Registro de Progresso
+
+```
+Sessão 0 (fluxo do projeto):  [ ] Foco: ☆☆☆☆☆
+Sessão 1 (pipeline parser):   [ ] Foco: ☆☆☆☆☆
+Sessão 2 (metadados):         [ ] Foco: ☆☆☆☆☆
+Sessão 3 (geometria):         [ ] Foco: ☆☆☆☆☆
+Sessão 4 (spawn / +0.5):      [ ] Foco: ☆☆☆☆☆
+Sessão 5 (memória):           [ ] Foco: ☆☆☆☆☆
+Sessão 6 (simular defesa):    [ ] Foco: ☆☆☆☆☆
+
+TOTAL: ___ / 7 sessões
+```
+
+**Recompensas:** 4 sessões = lanche favorito · 7 sessões = PRONTA 🎊
+
+---
+
+## ✅ Checklist de Domínio
+
+- [ ] Conto o fluxo do projeto inteiro em 60s, do `argv[1]` até a janela
+- [ ] Sei o que roda uma vez e o que roda por frame
+- [ ] Desenho o pipeline do parser de cabeça
+- [ ] Explico as 4 validações do mapa **e a ordem delas**
+- [ ] Explico vizinho vs perímetro, e `ft_strlen` vs `cols`
+- [ ] Explico as duas sentinelas e as duas perguntas de cada uma
+- [ ] Explico por que `is_map_line` olha o `line[1]`
+- [ ] Explico "exatamente um spawn" e o que quebrava antes
+- [ ] Explico o `+ 0.5` com colisão **e** com DDA
+- [ ] Explico por que `pad_grid` é o último
+- [ ] Explico a regra de ownership (quem aloca libera, quem é dono reporta)
+- [ ] Explico `still reachable` sem gaguejar
+- [ ] Sei rodar os 7 inválidos, os 11 válidos e o valgrind
+- [ ] Sei citar os 3 pontos fracos conhecidos antes de perguntarem
+
+---
+
+## 💡 Dicas
+
+**✅ FAÇA:** sessões curtas, mude de ambiente, explique em voz alta,
+gamifique (1 sessão = 1 ponto), timer visível
 
 **❌ EVITE:** sessão sem pausa +30min, "preciso terminar tudo hoje",
 ler sem anotar
@@ -267,28 +291,5 @@ ler sem anotar
 
 ---
 
-## 📊 Registro de Progresso
-
-```
-DIA 1:
-Sessão 1 (parse_color):        [ ] Foco: ☆☆☆☆☆
-Sessão 2 (has_closed_walls):   [ ] Foco: ☆☆☆☆☆
-Sessão 3 (map->cols/norm):     [ ] Foco: ☆☆☆☆☆
-Sessão 4 (free_game/testes):   [ ] Foco: ☆☆☆☆☆
-
-DIA 2:
-Sessão 5 (conflito silencioso):[ ] Foco: ☆☆☆☆☆
-Sessão 6 (MAP_W/MAP_H):        [ ] Foco: ☆☆☆☆☆
-Sessão 7 (parsing/loading):    [ ] Foco: ☆☆☆☆☆
-Sessão 8 (simular call):       [ ] Foco: ☆☆☆☆☆
-
-TOTAL: ___ / 8 sessões
-```
-
-**Recompensas:** 4 sessões = lanche favorito · 8 sessões = PRONTA PRA CALL 🎊
-
----
-
-**LEMBRA:** isso é revisão de trabalho que já tá pronto e commitado —
-o objetivo é conseguir *explicar*, não aprender do zero. Vai no teu
-ritmo. 💪
+**LEMBRA:** isso é revisão de trabalho que já está pronto. O objetivo é
+conseguir *explicar*, não aprender do zero. 💪

@@ -16,6 +16,9 @@ eles aparecem no código real, ver `docs/parser_explanation.md`.
 6. [Merge: fast-forward vs. 3-way vs. conflito semântico](#6-merge-fast-forward-vs-3-way-vs-conflito-semântico)
 7. [Concatenação de string literals em C](#7-concatenação-de-string-literals-em-c)
 8. [Decode vs. contexto gráfico (MLX42)](#8-decode-vs-contexto-gráfico-mlx42)
+9. [Coordenada contínua sobre grid discreto](#9-coordenada-contínua-sobre-grid-discreto)
+10. [Categorias de leak do valgrind](#10-categorias-de-leak-do-valgrind)
+11. [Validar antes, normalizar depois](#11-validar-antes-normalizar-depois)
 
 ---
 
@@ -69,6 +72,28 @@ No parser, essa regra apareceu em dois lugares:
 estrutura que veio de fora, ela não deveria alocar, liberar, nem
 imprimir erro sobre essa estrutura — só reportar pra cima.
 
+### O corolário: quem é dono também é quem reporta
+
+Posse e responsabilidade de reportar andam juntas. Se duas funções da
+mesma cadeia acham que ambas devem reportar o erro, o usuário vê a
+mensagem duas vezes — e o bug é chato de achar, porque cada função
+isolada parece certa.
+
+A forma de manter isso consistente é escolher **uma altura** na cadeia
+onde o erro vira mensagem, e fazer todo mundo abaixo dela retornar
+código cru.
+
+### Sentinela zerada: `memset` como pré-condição de limpeza
+
+Um truque que faz os dois lados da regra baterem: se a struct inteira
+começa zerada, então **todo ponteiro não usado é `NULL`**, e como
+`free(NULL)` é no-op, a função de limpeza pode ser chamada em qualquer
+ponto de falha sem saber até onde a inicialização chegou.
+
+Sem isso, cada caminho de erro precisaria liberar exatamente o que ele
+alocou — n caminhos, n funções de limpeza diferentes, e um deles vai
+estar errado.
+
 ---
 
 ## 3. Valores sentinela
@@ -88,6 +113,25 @@ if (config->floor[0] == -1)
 Isso é o que permite a garantia: "se `parse_meta` retornar sucesso,
 `config.floor` tem valores reais" — sem sentinela, sucesso não
 provaria nada sobre esse campo específico.
+
+### Uma sentinela, duas perguntas
+
+O mesmo valor impossível responde duas perguntas opostas, dependendo de
+**quando** você olha:
+
+| pergunta | quando | teste |
+|---|---|---|
+| "esse campo chegou a ser preenchido?" | no fim, na validação | `campo == sentinela` |
+| "esse campo já foi preenchido antes?" | durante, antes de escrever | `campo != sentinela` |
+
+A segunda é o que detecta **entrada duplicada** num formato onde as
+chaves podem vir em qualquer ordem. Sem ela, a segunda ocorrência
+sobrescreve a primeira em silêncio — e se o campo for um ponteiro
+alocado, sobrescrever é vazar.
+
+Repara que o tipo do campo já pode dar a sentinela de graça: pra
+ponteiro, `NULL` vindo de um `memset` faz esse papel sem precisar de
+valor inventado.
 
 ---
 
@@ -113,7 +157,7 @@ assim falhar depois, no `validate_config` (ex.: faltou uma textura).
 Nesse caso a linha já tinha sido alocada, ninguém nunca ficava dono
 dela de verdade, e o `parse_cub` fechava o fd no caminho de erro sem
 dar `free` nela — vazamento de 32 bytes, só nesse caminho específico
-(`maps/invalid/invalid03.cub` é o único mapa de teste que passa
+(`maps/invalid/invalid03_missing_tex.cub` é o único mapa de teste que passa
 exatamente por ali). Corrigido inicializando `first_line = NULL` no
 `parse_cub` e dando `free(first_line)` antes de fechar o fd nesse
 ramo — `free(NULL)` não faz nada nos outros casos, então é seguro
@@ -149,6 +193,18 @@ vizinho-por-vizinho em todo o grid pega qualquer vazamento, mesmo
 em bolsões isolados, e evita o custo/risco de recursão profunda
 (relevante — a versão flood fill do so_long já tinha dado problema
 de stack overflow antes).
+
+**A pegadinha da linha irregular:** checar vizinho num grid ragged não
+pode usar a largura *máxima* do grid como limite — tem que usar o
+comprimento **daquela linha específica**. Com a largura máxima, uma
+linha curta pareceria ter células válidas onde não existe nada
+alocado, e o vazamento passaria batido.
+
+**Limitação da abordagem:** checar só as 4 cardeais deixa passar
+aberturas *diagonais* — duas paredes que se tocam apenas na quina.
+Pra um jogo de grid comum isso não importa (ninguém anda na diagonal
+exata), mas num raycaster DDA um raio pode atravessar exatamente esse
+vértice.
 
 ---
 
@@ -224,3 +280,97 @@ APIs de imagem/gráficos em geral, não só na MLX42 — vale reconhecer
 o padrão: "isso precisa de um contexto ativo, ou só de bytes em
 disco?" muda onde na ordem de inicialização do programa aquele
 código pode rodar.
+
+---
+
+## 9. Coordenada contínua sobre grid discreto
+
+Quando um programa mistura **posição contínua** (`double`) com **grid
+discreto** (índices `int`), tem uma pergunta que precisa de resposta
+explícita: a coordenada inteira `5` é a *quina* da célula 5, ou o
+*centro* dela?
+
+A conversão `(int)pos` responde por você: ela mapeia todo o intervalo
+`[5.0, 6.0)` pra célula 5. Ou seja, **a coordenada inteira é a quina** —
+a borda esquerda/superior da célula.
+
+```
+   5.0        6.0
+    |----------|
+    |          |     (int)5.0 = 5   ← borda
+    |   5.5    |     (int)5.5 = 5   ← centro
+    |    •     |     (int)5.9 = 5
+    |          |
+    |----------|
+```
+
+Colocar uma entidade numa coordenada inteira significa colocá-la
+**exatamente em cima da divisa** entre células — o que costuma quebrar
+duas coisas:
+
+**1. Qualquer caixa de colisão vira ambígua.** Uma caixa centrada na
+quina com meia-largura `r` se espalha por 4 células ao mesmo tempo. Se
+uma delas for sólida, a entidade fica presa. Colocando no centro, com
+`r < 0.5`, a caixa cabe inteira numa célula só — a célula onde você
+sabe que ela pode estar.
+
+**2. Algoritmos incrementais começam com distância zero.** DDA,
+Bresenham e parentes calculam "quanto falta até a próxima linha de
+grade". Estando em cima da linha, essa distância é `0`, o primeiro
+passo não percorre nada, e a distância resultante vira `0` — que
+geralmente é divisor de alguma coisa.
+
+**A regra prática:** posição de entidade num grid é sempre
+`índice + 0.5`, salvo motivo explícito pro contrário.
+
+---
+
+## 10. Categorias de leak do valgrind
+
+O `LEAK SUMMARY` tem quatro linhas, e elas **não** são igualmente
+graves:
+
+| categoria | significa | é problema? |
+|---|---|---|
+| `definitely lost` | nenhum ponteiro aponta mais pro bloco | **Sim.** É leak. |
+| `indirectly lost` | só era alcançável através de um bloco `definitely lost` | **Sim.** Some junto quando você corrige o pai. |
+| `possibly lost` | só há ponteiro pro *meio* do bloco, não pro início | Talvez — comum com struct interna |
+| `still reachable` | **ainda havia ponteiro válido no fim do programa** | Normalmente não |
+
+`still reachable` é memória que o programa simplesmente não liberou
+antes de terminar — mas ninguém perdeu o endereço dela. Bibliotecas
+grandes (drivers gráficos, X11, GLFW, runtimes) alocam tabelas internas
+de propósito e deixam o SO recolher no `exit`. Isso é escolha de design
+delas, não bug seu.
+
+**Como testar seu próprio código sem o ruído da biblioteca:** rode um
+caminho de execução que **não chega a inicializar** a biblioteca. Num
+programa gráfico, isso normalmente é um caminho de erro de validação —
+ele sai antes de abrir janela. Aí o total volta a ser só o seu, e dá pra
+exigir zero absoluto.
+
+---
+
+## 11. Validar antes, normalizar depois
+
+Muito parser tem duas etapas que é tentador juntar: **validar** (a
+entrada é aceitável?) e **normalizar** (deixar num formato uniforme pro
+resto do programa consumir).
+
+Juntar dá errado de um jeito específico: você acaba **validando dados
+que o seu próprio código inventou**. Se a normalização preenche buracos
+com um valor de preenchimento, e a validação roda depois, ela vai
+aprovar ou reprovar com base nesse preenchimento — não no que o usuário
+escreveu. Mensagens de erro passam a apontar pra posições que não
+existem no arquivo original.
+
+```
+ERRADO:  ler → normalizar → validar    (valida o que você inventou)
+CERTO:   ler → validar → normalizar    (valida o que veio; normaliza o aprovado)
+```
+
+O ganho de normalizar por último é virar uma **pós-condição**: depois
+dessa etapa, todo consumidor lá na frente pode assumir o formato
+uniforme sem checar. É o que transforma "o grid pode ser irregular" num
+problema que existe em uma função só, em vez de em todas as que indexam
+o grid.

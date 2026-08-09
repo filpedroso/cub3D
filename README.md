@@ -101,6 +101,155 @@ C 225,30,0
   starting position and facing direction, `D` door (bonus), space/empty
   outside the map bounds. The map must be fully enclosed by walls.
 
+## 📁 Project Structure
+
+Eight parser files, fourteen render files, one header holding every
+struct and prototype.
+
+<details>
+<summary><b>▸ Full directory tree</b></summary>
+
+<br>
+
+```
+cub3D/
+├── Makefile                    all · clean · fclean · re · val · test
+├── include/
+│   └── cub3d.h                 every struct, enum, macro and prototype
+│
+├── src/
+│   ├── main.c                  entry point: parse → render → free
+│   ├── main_test.c             entry point of the parser-only binary
+│   ├── main_test_with_render.c ─┐ not in the Makefile: scratch files
+│   ├── mlx_ref.c               ─┘ kept for reference, never compiled
+│   │
+│   ├── parser/                 .cub file → validated t_game
+│   │   ├── parser.c            parse_cub — orchestrates; drains the fd
+│   │   ├── parser_meta.c       NO/SO/WE/EA/F/C section, until the map starts
+│   │   ├── file_utils.c        extension checks, trim, texture paths
+│   │   ├── parser_color.c      "F 220,100,0" → int[3]
+│   │   ├── parser_map.c        builds the grid, finds the player
+│   │   ├── parser_grid.c       row padding, spawn collection
+│   │   ├── parser_walls.c      map-is-closed validation
+│   │   └── free_utils.c        all parser-side cleanup
+│   │
+│   ├── render/                 t_game → pixels, 60x per second
+│   │   ├── render.c            render — init, MLX loop, teardown
+│   │   ├── render_init.c       one-time derived state: FOV LUT, colors
+│   │   ├── mlx_config.c        window + the two images
+│   │   ├── texture_load.c      mlx_load_png → game->tex[4]
+│   │   ├── compute.c           per-frame input and state update
+│   │   ├── update_pl_pos.c     movement + collision box
+│   │   ├── raycasting.c        DDA: ray → wall hit + distance
+│   │   ├── draw_frame.c        per-frame draw orchestration
+│   │   ├── draw_tex_view.c     textured walls (T on)
+│   │   ├── draw_dbg_view.c     flat debug walls (T off)
+│   │   ├── draw_floor.c        floor and ceiling fill
+│   │   ├── draw_ray.c          ray overlay (R)
+│   │   ├── draw_minimap.c      minimap overlay (M)
+│   │   └── minimap_bake.c      minimap background, baked once
+│   │
+│   └── utils/
+│       └── utils.c             handle_error, is_solid, is_spawn
+│
+├── maps/
+│   ├── valid/                  11 maps — subject_map.cub is the official one
+│   └── invalid/                7 maps, one per rejection rule
+│
+├── assets/textures/            four packs, each with its own CREDITS.txt
+│   ├── kenney_retro/           CC0 walls used by subject_map.cub
+│   ├── greybox/                flat high-contrast debugging walls
+│   ├── lodev_classic/          the classic Lodev tutorial set
+│   └── caquinho/               terrazzo original + 6 hue-rotated recolors
+│
+├── libft/                      47 sources, including get_next_line
+│                               and ft_append_line (grows the map grid)
+├── MLX42/                      graphics library (submodule, built via CMake)
+│
+└── docs/
+    ├── parser_explanation.md   the parser, function by function
+    ├── parser_concepts.md      the general concepts behind it
+    ├── parser_study_plan.md    revision roadmap pointing at both
+    ├── parser_session_log.md   dated work log
+    ├── parser_todo.md          the original plan (historical)
+    ├── next_session_todo.md    render integration plan (historical)
+    └── defense_prep_log.md     pre-defense QA notes
+```
+
+</details>
+
+## 🔄 Execution Flow
+
+Everything before `mlx_loop()` runs **once**; everything inside
+`on_update` runs **every frame**. Anything computable from data fixed
+for the whole run — the FOV table, the packed floor/ceiling colors, the
+minimap background — is deliberately hoisted above the loop.
+
+<details>
+<summary><b>▸ Full flow, from <code>argv[1]</code> to exit</b></summary>
+
+<br>
+
+```
+main()                                                    src/main.c
+ │
+ ├─ ft_memset(&game, 0, sizeof(game))
+ │      Zeroes every field, which is what makes free_game safe to call
+ │      at any later point of failure: unset pointers are NULL.
+ │
+ ├─ parse_cub(argv[1], &game) ─────────────── error ──► free_game, exit 1
+ │      .cub file → validated t_config + t_map + t_player.
+ │      Nothing downstream revalidates. See docs/parser_explanation.md
+ │
+ ├─ dir_to_angle(player.dir)
+ │      'N'/'S'/'E'/'W' → the starting camera angle in degrees.
+ │
+ └─ render(&game) ─────────────────────────── error ──► free_game, exit 1
+     │
+     ├─ init_minimap_geometry()
+     │      Pure arithmetic on the parsed map — sizes the minimap to the
+     │      map's aspect ratio. Runs before MLX exists because it needs
+     │      no graphics context.
+     │
+     ├─ init_or_fail()
+     │   ├─ load_textures()      mlx_load_png × 4 → game->tex[4]
+     │   │                       Decode only: still no mlx_t* needed.
+     │   ├─ config_mlx()         mlx_init + the two images:
+     │   │                       main_img (3D view) then map_img (minimap),
+     │   │                       in that order so the minimap sits on top.
+     │   └─ init_render()        FOV lookup table, horizon, projection
+     │                           plane, F/C packed to RGBA, minimap
+     │                           background baked once.
+     │      Each stage unwinds exactly what it had allocated on failure.
+     │
+     ├─ mlx_loop_hook(on_update) ┐
+     ├─ mlx_cursor_hook(mouse)   │ registered, not yet running
+     │                           │
+     ├─ mlx_loop() ──────────────┘  ← blocks here until the window closes
+     │   │
+     │   └─ on_update(), once per frame:
+     │       │
+     │       ├─ compute()
+     │       │   ├─ ESC pressed? → mlx_close_window
+     │       │   ├─ view_toggles()      M / R / T, on key-down edge
+     │       │   ├─ update_pl_position() move + collision box test
+     │       │   └─ cast_rays()         DDA per column → rays[i].perp_dist
+     │       │
+     │       └─ draw_frame()
+     │           ├─ draw_minimap()   if show_minimap
+     │           └─ draw_3d()
+     │               ├─ draw_view_tex()  if show_tex  → samples tex[face]
+     │               └─ draw_view_dbg()  otherwise    → flat per-face colors
+     │
+     ├─ mlx_terminate()      window and images
+     ├─ free_textures()      the four mlx_texture_t*
+     └─ free(map_pixels_buf)
+
+ └─ free_game(&game)         the four texture paths + the map grid → exit 0
+```
+
+</details>
+
 ## 🔨 Technical Overview
 
 ### Raycasting Engine
