@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   render.c                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: fpedroso <fpedroso@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: maria-ol <maria-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/30 13:55:36 by fpedroso          #+#    #+#             */
-/*   Updated: 2026/08/09 14:04:51 by fpedroso         ###   ########.fr       */
+/*   Updated: 2026/08/09 20:40:59 by maria-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,6 @@
 static void	on_update(void *param);
 static bool	init_or_fail(t_game *game);
 static void	mouse_move(double x, double y, void *param);
-
 
 bool	render(t_game *game)
 {
@@ -37,9 +36,9 @@ bool	render(t_game *game)
 
 static void	mouse_move(double x, double y, void *param)
 {
-	t_game	*game;
-	double	dx;
-	static	t_mouse_state mouse = {0};
+	t_game					*game;
+	double					dx;
+	static t_mouse_state	mouse = {0};
 
 	(void)y;
 	game = param;
@@ -47,7 +46,7 @@ static void	mouse_move(double x, double y, void *param)
 	{
 		mouse.last_x = x;
 		mouse.first = false;
-		return;
+		return ;
 	}
 	dx = x - mouse.last_x;
 	mouse.last_x = x;

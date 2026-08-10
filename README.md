@@ -98,8 +98,14 @@ C 225,30,0
   South, West, East).
 - `F`/`C`: floor and ceiling color, as RGB (`R,G,B`).
 - Map grid: `1` wall, `0` walkable floor, `N`/`S`/`E`/`W` player's
-  starting position and facing direction, `D` door (bonus), space/empty
-  outside the map bounds. The map must be fully enclosed by walls.
+  starting position and facing direction, space for anything outside the
+  map bounds. Those are the only characters accepted — anything else is
+  rejected with an error.
+- The map must be fully enclosed by walls. A space is treated as *void*,
+  so a space may sit anywhere as long as no walkable cell touches it:
+  around an irregular outline, or in a pocket sealed by walls. A space
+  next to a `0` is a hole the player could walk into, and the map is
+  rejected as open.
 
 ## 📁 Project Structure
 
@@ -264,8 +270,8 @@ The 3D view is built one vertical screen column at a time:
 ### Map System
 
 * The `.cub` file is parsed into a **dynamic** grid (`rows`/`cols` tracked per map, not a fixed-size array), together with the floor/ceiling colors and the four wall textures
-* Every walkable cell (`0`, `N`, `S`, `E`, `W`, `D`) must have all four cardinal neighbors inside the grid and non-space, otherwise the map is rejected as open — checked cell-by-cell rather than via flood fill. A flood fill only walks the region reachable from the player's starting position, so a leak in a pocket the player can't reach would slip through; scanning every cell catches that case too, at the cost of not needing a visited-set or recursion
-* `D` is recognized by the parser as a walkable tile, but we did **not** implement doors as an interactive bonus (no open/close state, no animation) — out of scope for this pass
+* Every walkable cell (`0`, `N`, `S`, `E`, `W`) must have all four cardinal neighbors inside the grid and non-space, otherwise the map is rejected as open — checked cell-by-cell rather than via flood fill. A flood fill only walks the region reachable from the player's starting position, so a leak in a pocket the player can't reach would slip through; scanning every cell catches that case too, at the cost of not needing a visited-set or recursion
+* Rows may have different lengths; the subject does not require a rectangular map. Validation runs on the file exactly as written, and only afterwards is every row padded with spaces up to the widest one — so the grid the renderer indexes is rectangular, while the errors reported always refer to what the user actually typed
 
 ### Minimap & Debug View
 
