@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: fpedroso <fpedroso@student.42sp.org.br>    +#+  +:+       +#+         #
+#    By: maria-ol <maria-ol@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/30 13:23:40 by fpedroso          #+#    #+#              #
-#    Updated: 2026/08/10 17:26:06 by fpedroso         ###   ########.fr        #
+#    Updated: 2026/08/10 17:49:47 by maria-ol         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -152,4 +152,4 @@ banner:
 	@echo "$(GREEN)  Compiled successfully! Ready to cast some rays! ✨$(RESET)"
 	@echo ""
 
-.PHONY: all clean fclean re val banner test
+.PHONY: all clean fclean re val banner test bonus

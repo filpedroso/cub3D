@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   parser_meta.c                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mona <mona@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: maria-ol <maria-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/06/07 14:55:45 by mona              #+#    #+#             */
-/*   Updated: 2026/07/11 16:19:41 by mona             ###   ########.fr       */
+/*   Updated: 2026/08/10 17:48:52 by maria-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -146,7 +146,7 @@ static int	read_meta_lines(int fd, t_config *config, char **first_map_line)
  * @param first_map_line Address of a char* to store the first map line.
  *
  * @return ERR_NONE on success, or an error code on failure:
- * @retval ERR_MISSING_TEX   If any of the four textures (NO/SO/WE/EA) is absent.
+ * @retval ERR_MISSING_TEX   If any of the 4 textures (NO/SO/WE/EA) is absent.
  * @retval ERR_INVALID_COLOR If a color line (F/C) is malformed.
  * @retval ERR_INVALID_ID    If an unrecognized identifier is encountered.
  * @retval ERR_MALLOC        If memory allocation fails during parsing.
