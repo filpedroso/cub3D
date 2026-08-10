@@ -63,7 +63,7 @@ static int	check_cell_neighbors(char **map, int rows, int i, int j)
 /**
  * @brief Validates that the map is fully enclosed by walls.
  *
- * Walks every walkable cell in the grid ('0', 'N', 'S', 'E', 'W', 'D')
+ * Walks every walkable cell in the grid ('0', 'N', 'S', 'E', 'W')
  * and checks that its four neighbors are valid closed cells. If any
  * walkable cell borders a space or the edge of the grid, the map is
  * considered open.
@@ -87,7 +87,7 @@ int	has_closed_walls(char **map, int rows)
 		{
 			c = map[i][j];
 			if ((c == '0' || c == 'N' || c == 'S' || c == 'E'
-					|| c == 'W' || c == 'D')
+					|| c == 'W')
 				&& !check_cell_neighbors(map, rows, i, j))
 				return (FALSE);
 			j++;

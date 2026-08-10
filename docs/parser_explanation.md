@@ -375,9 +375,20 @@ informa. Quem libera e quem reporta é o dono, via `color_error`
 ([free_utils.c:90](../src/parser/free_utils.c#L90)), que faz as duas
 coisas numa chamada só pra não repetir o par em quatro lugares.
 
-As 3 validações de cada componente, **nessa ordem**: é tudo dígito → não
-é vazio → cabe em `[0,255]`. A ordem importa porque `ft_atoi` de string
-com lixo é indefinido.
+Cada componente passa por: pular espaços à esquerda → contar os dígitos
+→ pular espaços à direita → exigir que a string tenha **acabado**. Só
+então o `ft_atoi` roda e o valor é testado contra `[0,255]`.
+
+Tolerar espaço em volta é o que faz `C 255,214, 178` parsear igual a
+`C 255,214,178`. O subject diz que as informações de um elemento podem
+ser separadas por um ou mais espaços, sem definir se R, G e B contam
+como informações separadas — aceitar não custa nada, já que espaço
+dentro de uma cor não tem outro significado possível.
+
+O `*s != '\0'` no fim é o que impede a tolerância de ir longe demais:
+`2 20` continua sendo recusado, porque o espaço no meio deixa
+caracteres por consumir. Espaço em volta, sim; espaço no meio do
+número, não.
 
 > Ver [`parser_concepts.md` §2](parser_concepts.md#2-ownership-de-memória).
 
@@ -655,6 +666,8 @@ sobrando.
 | Linha em branco **no meio** do mapa | `ERR_MAP_OPEN` — recusa (a linha vazia vira row de tamanho 0, e os vizinhos ficam inválidos) |
 | Linha em branco **no fim** do arquivo | **Aceito** — vira row vazia que o `pad_grid` preenche de espaço; espaço é sólido, então é inofensivo |
 | Linhas de comprimentos diferentes | **Aceito** — é o caso normal |
+| `F 220, 100, 0` (espaço após a vírgula) | **Aceito** — espaço em volta do número é tolerado |
+| `F 2 20,100,0` (espaço no meio do número) | `ERR_INVALID_COLOR` — recusa |
 
 ### Comandos
 
