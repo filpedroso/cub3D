@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   utils.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: maria-ol <maria-ol@student.42.fr>          +#+  +:+       +#+        */
+/*   By: fpedroso <fpedroso@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/28 21:23:39 by mona              #+#    #+#             */
-/*   Updated: 2026/08/09 19:27:28 by maria-ol         ###   ########.fr       */
+/*   Updated: 2026/08/10 19:32:26 by fpedroso         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,7 +89,7 @@ int	handle_error(t_error error)
  */
 bool	is_solid(char c)
 {
-	return (c != '0');
+	return (c == '1');
 }
 
 /**

@@ -1,0 +1,100 @@
+# Suppressions for cub3D / MLX42 (GLFW + X11 + dynamic loader) still-reachable
+# "leaks" at exit. These are one-time init allocations from Xlib/GLFW/LLVM
+# that live for the process lifetime and are reclaimed by the OS on exit.
+# They are NOT leaks in your own code.
+
+{
+   dl-loader-init-general
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   ...
+   fun:_dl_open
+}
+
+{
+   dl-loader-dlopen-general
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   ...
+   fun:dlopen_doit
+}
+
+{
+   dl-loader-call-init
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   ...
+   fun:call_init.part.0
+}
+
+{
+   x11-xlc-locale-database
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   ...
+   fun:_XlcCreateLocaleDataBase
+}
+
+{
+   x11-xlc-create-lc
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   ...
+   fun:_XlcCreateLC
+}
+
+{
+   x11-xrm-init-parse-info
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   ...
+   fun:_XrmInitParseInfo
+}
+
+{
+   x11-xrm-string-to-quark
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   ...
+   fun:_XrmInternalStringToQuark
+}
+
+{
+   x11-xlc-charset-ct
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   ...
+   fun:_XlcAddCT
+}
+
+{
+   glfw-init-general
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   ...
+   fun:glfwInit
+}
+
+{
+   llvm-init-general
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   ...
+   obj:/usr/lib/x86_64-linux-gnu/libLLVM-15.so.1
+}
+
+{
+   dl-find-object-update
+   Memcheck:Leak
+   match-leak-kinds: definite,indirect,possible,reachable
+   ...
+   fun:_dl_find_object_update
+}
+
+{
+   glfw-dlclose-terminate
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   ...
+   fun:_dl_close_worker.part.0.isra.0
+}
