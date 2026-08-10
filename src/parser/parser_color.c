@@ -73,17 +73,56 @@ static int	check_color_part(char **parts, int i, int *dest)
 }
 
 /**
+ * @brief Rejects a comma layout that ft_split would silently repair.
+ *
+ * ft_split counts words as runs of non-separator characters, so a run
+ * of commas produces no token at all: "220,,100,0" and "220,100,0,,,"
+ * both come back as the three valid parts {"220","100","0"} and sail
+ * through count_parts and check_color_part, which never see the empty
+ * field. The layout therefore has to be judged on the raw string,
+ * before the split.
+ *
+ * Exactly two commas, none at either end, and none adjacent to the
+ * next. A field of only spaces still gets through here, which is
+ * intended: check_color_part rejects it on digits == 0.
+ *
+ * @param s The colour payload, past the identifier and its spaces.
+ *
+ * @return ERR_NONE if the layout is sound, ERR_INVALID_COLOR otherwise.
+ */
+static int	check_commas(const char *s)
+{
+	int	commas;
+
+	commas = 0;
+	if (!*s || *s == ',' || s[ft_strlen(s) - 1] == ',')
+		return (ERR_INVALID_COLOR);
+	while (*s)
+	{
+		if (*s == ',' && s[1] == ',')
+			return (ERR_INVALID_COLOR);
+		if (*s == ',')
+			commas++;
+		s++;
+	}
+	if (commas != 2)
+		return (ERR_INVALID_COLOR);
+	return (ERR_NONE);
+}
+
+/**
  * @brief Extracts and validates an RGB color from a metadata line.
  *
  * Advances past the one-character identifier ("F " or "C ") and any
- * trailing spaces, splits the remainder on ',', and validates that
- * it yields exactly three in-range digit values.
+ * trailing spaces, checks the comma layout on the raw payload, then
+ * splits the remainder on ',' and validates that it yields exactly
+ * three in-range digit values.
  *
  * @param line The full metadata line (e.g. "F 220,100,0").
  * @param dest The int[3] where the R, G, B values will be stored.
  *
  * @return ERR_NONE on success, or an error code on failure:
- * @retval ERR_INVALID_COLOR If parts count, digits, or range are wrong.
+ * @retval ERR_INVALID_COLOR If commas, parts count, digits, or range are wrong.
  * @retval ERR_MALLOC If ft_split fails to allocate memory.
  */
 int	parse_color(const char *line, int dest[3])
@@ -94,6 +133,8 @@ int	parse_color(const char *line, int dest[3])
 	line += 2;
 	while (*line == ' ')
 		line++;
+	if (check_commas(line) != ERR_NONE)
+		return (handle_error(ERR_INVALID_COLOR));
 	parts = ft_split(line, ',');
 	if (!parts)
 		return (handle_error(ERR_MALLOC));

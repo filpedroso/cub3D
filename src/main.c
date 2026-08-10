@@ -40,6 +40,19 @@ static float	dir_to_angle(char dir)
 	return (270.0f);
 }
 
+/**
+ * @brief Entry point: parse the scene, run the render loop, clean up.
+ *
+ * Every failure exits 1, not ERROR. ERROR is -1, the sentinel the
+ * parser propagates internally; returning it from main would reach the
+ * shell as 255, since an exit status is the low byte of the return
+ * value. 1 is what a caller testing for failure expects.
+ *
+ * @param argc Argument count; exactly 2 is required.
+ * @param argv Argument vector; argv[1] is the .cub scene file.
+ *
+ * @return SUCCESS (0) on a clean run, 1 on any failure.
+ */
 int	main(int argc, char **argv)
 {
 	t_game	game;
@@ -48,18 +61,18 @@ int	main(int argc, char **argv)
 	if (argc != 2)
 	{
 		handle_error(ERR_ARGS);
-		return (ERROR);
+		return (1);
 	}
 	if (parse_cub(argv[1], &game) != ERR_NONE)
 	{
 		free_game(&game);
-		return (ERROR);
+		return (1);
 	}
 	game.player.dir_ang = dir_to_angle(game.player.dir);
 	if (!render(&game))
 	{
 		free_game(&game);
-		return (ERROR);
+		return (1);
 	}
 	free_game(&game);
 	return (SUCCESS);

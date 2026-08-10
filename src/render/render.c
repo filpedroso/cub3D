@@ -34,11 +34,18 @@ bool	render(t_game *game)
 	return (true);
 }
 
+/*
+** first must start true, not false: the guard below exists to swallow
+** the very first callback, which has no previous x to subtract from.
+** A plain {0} would zero it, the guard would never fire, and that first
+** event would turn the camera by the cursor's absolute x — up to half a
+** window width in degrees.
+*/
 static void	mouse_move(double x, double y, void *param)
 {
 	t_game					*game;
 	double					dx;
-	static t_mouse_state	mouse = {0};
+	static t_mouse_state	mouse = {0, true};
 
 	(void)y;
 	game = param;

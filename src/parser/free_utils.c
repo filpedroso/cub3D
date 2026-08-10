@@ -37,47 +37,6 @@ void	free_map(char **map)
 }
 
 /**
- * @brief Frees a partially allocated visited array during pathfinding.
- *
- * Used for error handling during pathfinding when memory allocation fails
- * partway through creating the visited map. Frees only the rows that were
- * successfully allocated (from 0 to 'until'), then frees the array itself.
- * 
- * @param visited The partially allocated 2D array to free.
- * @param until The number of rows that were successfully allocated.
- */
-void	free_visited_partial(char **visited, int until)
-{
-	while (until > 0)
-		free(visited[--until]);
-	free(visited);
-}
-
-/**
- * @brief Frees a complete visited array used in pathfinding.
- *
- * Deallocates a fully allocated visited map that was used during the
- * flood-fill pathfinding algorithm. Iterates through all rows and frees
- * them, then frees the array of pointers. Safely handles NULL arrays.
- * 
- * @param visited A NULL-terminated 2D array of characters to free.
- */
-void	free_visited(char **visited)
-{
-	int	i;
-
-	if (!visited)
-		return ;
-	i = 0;
-	while (visited[i])
-	{
-		free(visited[i]);
-		i++;
-	}
-	free(visited);
-}
-
-/**
  * @brief Frees a split result and reports an invalid color error.
  *
  * Centralizes the cleanup + error pattern shared by every failure

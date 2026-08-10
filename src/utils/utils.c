@@ -36,8 +36,14 @@
 				ERR_INVALID_ID    ← identificador desconhecido no .cub
 				ERR_MLX           ← problema de inicialização da MLX42
 				ERR_DUPLICATE_ID  ← NO/SO/WE/EA/F/C repetido no .cub
+				ERR_MAP_EMPTY     ← header valido, nenhuma linha de mapa
  *
- * @return Returns ERROR (-1) to indicate error status for main() exit code.
+ * Messages go to STDERR_FILENO, not stdout: they are diagnostics, and
+ * keeping them off stdout is what lets a caller redirect the two apart.
+ *
+ * @return Returns ERROR (-1), the internal "not ERR_NONE" sentinel every
+ * parsing path propagates. It is not the process exit code — main maps
+ * any failure onto 1.
  * @note ERR_NONE (index 0) is NULL and should never be passed to this function.
  * @see t_error enum definition in cub3d.h
  * @see main() in cub3d.c for usage examples
@@ -57,13 +63,12 @@ int	handle_error(t_error error)
 		"Error\ninvalid RGB\n",
 		"Error\ninvalid identifier in .cub\n",
 		"Error\nMLX42 initialization failed\n",
-		"Error\nduplicate identifier in .cub\n"
+		"Error\nduplicate identifier in .cub\n",
+		"Error\nmissing map in .cub file\n"
 	};
 
 	if (error > 0 && error < (int)(sizeof(messages) / sizeof(messages[0])))
-	{
-		printf("%s", messages[error]);
-	}
+		ft_putstr_fd((char *)messages[error], STDERR_FILENO);
 	return (ERROR);
 }
 

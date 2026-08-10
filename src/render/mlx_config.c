@@ -38,7 +38,7 @@ static bool	initiate_mlx(t_game *game)
 	game->mlx = mlx_init(SCR_W, SCR_H, "cub3D", true);
 	if (!game->mlx)
 	{
-		printf("%s\n", mlx_strerror(mlx_errno));
+		ft_putendl_fd((char *)mlx_strerror(mlx_errno), STDERR_FILENO);
 		return (false);
 	}
 	return (true);
@@ -53,12 +53,12 @@ static bool	add_main_img(t_game *game)
 	game->main_img = mlx_new_image(game->mlx, SCR_W, SCR_H);
 	if (!game->main_img)
 	{
-		printf("%s\n", mlx_strerror(mlx_errno));
+		ft_putendl_fd((char *)mlx_strerror(mlx_errno), STDERR_FILENO);
 		return (false);
 	}
 	if (mlx_image_to_window(game->mlx, game->main_img, 0, 0) == -1)
 	{
-		printf("%s\n", mlx_strerror(mlx_errno));
+		ft_putendl_fd((char *)mlx_strerror(mlx_errno), STDERR_FILENO);
 		return (false);
 	}
 	return (true);
@@ -79,13 +79,13 @@ static bool	add_map_img(t_game *game)
 	game->map_img = mlx_new_image(game->mlx, width, height);
 	if (!game->map_img)
 	{
-		printf("%s\n", mlx_strerror(mlx_errno));
+		ft_putendl_fd((char *)mlx_strerror(mlx_errno), STDERR_FILENO);
 		return (false);
 	}
 	if (mlx_image_to_window(game->mlx, game->map_img, 0,
 			SCR_H - (int32_t)height) == -1)
 	{
-		printf("%s\n", mlx_strerror(mlx_errno));
+		ft_putendl_fd((char *)mlx_strerror(mlx_errno), STDERR_FILENO);
 		return (false);
 	}
 	return (true);

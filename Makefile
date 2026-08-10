@@ -6,15 +6,15 @@
 #    By: fpedroso <fpedroso@student.42sp.org.br>    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/30 13:23:40 by fpedroso          #+#    #+#              #
-#    Updated: 2026/08/09 13:57:00 by fpedroso         ###   ########.fr        #
+#    Updated: 2026/08/10 17:26:06 by fpedroso         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 NAME = cub3D
 
-CC := gcc
-CFLAGS := -Wall -Wextra -Werror -g -Iinclude -Ilibft -IMLX42/include
-# Asan: -fsanitize=address,undefined
+CC := cc
+CFLAGS := -Wall -Wextra -Werror -Iinclude -Ilibft -IMLX42/include
+# Debug: -g       Asan: -fsanitize=address,undefined
 
 # Colors
 GREEN        = \033[0;32m
@@ -90,12 +90,14 @@ TEST_OBJS :=	$(OBJ_DIR)/main_test.o			 \
 
 all: $(NAME)
 
+bonus: all
+
 $(NAME): $(OBJ) $(LIBFT) $(MLX)
 	@$(CC) $(CFLAGS) -no-pie $(OBJ) $(LIBFT) $(MLX) $(GLFW) \
 		$(MLX_LINK) -o $(NAME)
 	@$(MAKE) banner
 
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c include/cub3d.h
 	@mkdir -p $(dir $@)
 	@$(CC) $(CFLAGS) -c $< -o $@
 
@@ -124,6 +126,8 @@ fclean: clean
 
 re: fclean all
 
+MAP ?= maps/valid/map01.cub
+
 val: all
 	valgrind	--leak-check=full		\
 				--show-leak-kinds=all	\
@@ -131,7 +135,7 @@ val: all
 				--track-origins=yes		\
 				--track-fds=yes			\
 				--keep-debuginfo=yes	\
-				--tool=memcheck ./cub3D
+				--tool=memcheck ./cub3D $(MAP)
 
 banner:
 	@echo ""

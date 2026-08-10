@@ -125,7 +125,8 @@ typedef enum e_error
 	ERR_INVALID_COLOR,
 	ERR_INVALID_ID,
 	ERR_MLX,
-	ERR_DUPLICATE_ID
+	ERR_DUPLICATE_ID,
+	ERR_MAP_EMPTY
 }	t_error;
 
 /* Which of the four wall faces a ray struck, named after the direction
@@ -359,8 +360,6 @@ int			handle_error(t_error error);
 bool		is_solid(char c);
 bool		is_spawn(char c);
 void		free_map(char **map);
-void		free_visited(char **visited);
-void		free_visited_partial(char **visited, int until);
 int			color_error(char **parts);
 void		free_game(t_game *game);
 

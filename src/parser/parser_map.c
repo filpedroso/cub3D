@@ -119,6 +119,11 @@ static void	update_max_cols(t_map *map, const char *line)
  * trimmed line to map->grid via ft_append_line. Tracks map->cols
  * as the length of the longest row along the way.
  *
+ * The new array goes through tmp rather than straight into map->grid,
+ * because ft_append_line leaves the old array untouched when it fails.
+ * Assigning its NULL directly would drop the only pointer to every row
+ * read so far, and free_game would have nothing left to release.
+ *
  * @param fd             Open file descriptor positioned after metadata.
  * @param map            Pointer to t_map to be populated.
  * @param first_map_line First map line already consumed by parse_meta.
@@ -128,6 +133,7 @@ static void	update_max_cols(t_map *map, const char *line)
 static int	build_map_grid(int fd, t_map *map, char *first_map_line)
 {
 	char	*line;
+	char	**tmp;
 	int		count;
 
 	line = first_map_line;
@@ -137,12 +143,13 @@ static int	build_map_grid(int fd, t_map *map, char *first_map_line)
 	{
 		trim_newline(line);
 		update_max_cols(map, line);
-		map->grid = ft_append_line(map->grid, line, count);
-		if (!map->grid)
+		tmp = ft_append_line(map->grid, line, count);
+		if (!tmp)
 		{
 			free(line);
 			return (handle_error(ERR_MALLOC));
 		}
+		map->grid = tmp;
 		count++;
 		free(line);
 		line = get_next_line(fd);
@@ -155,7 +162,15 @@ static int	build_map_grid(int fd, t_map *map, char *first_map_line)
  * @brief Reads the map grid from the file descriptor and populates t_map.
  *
  * Delegates line reading to build_map_grid, then runs the validation
- * pipeline in order: character validity, wall closure, player spawn.
+ * pipeline in order: grid exists, character validity, wall closure,
+ * player spawn.
+ *
+ * The emptiness check comes first and is not optional. A file whose
+ * header parses cleanly but carries no map line at all leaves
+ * first_map_line NULL, so build_map_grid never enters its loop and
+ * reports success with grid still NULL and rows still 0. Every
+ * validator below walks grid[i] unguarded, so without this the next
+ * line dereferences NULL.
  *
  * @param fd             Open file descriptor positioned after metadata.
  * @param map            Pointer to t_map to be populated.
@@ -164,6 +179,7 @@ static int	build_map_grid(int fd, t_map *map, char *first_map_line)
  *
  * @return ERR_NONE on success, or an error code on failure:
  * @retval ERR_MALLOC     If build_map_grid fails to allocate memory.
+ * @retval ERR_MAP_EMPTY  If the file holds no map line at all.
  * @retval ERR_MAP_CHARS  If the grid contains invalid characters.
  * @retval ERR_MAP_OPEN   If the map is not fully closed by walls.
  * @retval ERR_MAP_PLAYER If no valid player spawn is found.
@@ -175,6 +191,8 @@ int	parse_map_grid(int fd, t_map *map, char *first_map_line, t_player *player)
 	err = build_map_grid(fd, map, first_map_line);
 	if (err != ERR_NONE)
 		return (err);
+	if (!map->grid || map->rows == 0)
+		return (handle_error(ERR_MAP_EMPTY));
 	if (!has_only_valid_chars(map->grid))
 		return (handle_error(ERR_MAP_CHARS));
 	if (!has_closed_walls(map->grid, map->rows))

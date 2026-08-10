@@ -1,4 +1,4 @@
-*This project was created as part of the curriculum at 42 by fpedroso, maria-ol.*
+*This project has been created as part of the 42 curriculum by fpedroso, maria-ol.*
 
 # cub3D
 
