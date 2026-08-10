@@ -694,24 +694,10 @@ make test && ./test_parser maps/valid/subject_map.cub
 
 ## 12. Pontos fracos conhecidos
 
-Três coisas que a gente sabe e assume. Melhor citar antes de perguntarem.
+Duas coisas que a gente sabe e assume. Melhor citar antes de perguntarem.
 
 **1. `has_closed_walls` só olha as 4 cardeais, sem diagonais.**
 Num DDA, um raio exatamente diagonal pode atravessar o vértice entre
 duas paredes que se tocam só na quina. É caso de canto; alguns
 avaliadores testam.
 
-**2. O `'D'` é código morto.**
-O `has_closed_walls` trata `'D'` como célula andável
-([parser_walls.c:89-90](../src/parser/parser_walls.c#L89-L90)), mas o
-`has_only_valid_chars` **não** aceita `'D'`. O ramo é inalcançável —
-sobra de um plano de porta (bonus) que não foi em frente. Pelo mesmo
-motivo, `free_visited` e `free_visited_partial` no `free_utils.c` não
-são chamados por ninguém: são resto da abordagem de flood fill que virou
-o `has_closed_walls`.
-
-**3. Leak só em OOM real, no `ft_append_line`.**
-Se ele falhar, retorna NULL e o `map->grid` já foi sobrescrito — o array
-anterior vira órfão ([parser_map.c:145-150](../src/parser/parser_map.c#L145-L150)).
-Só dispara se o `malloc` falhar de verdade, então valgrind normal nunca
-pega.

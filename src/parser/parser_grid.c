@@ -55,8 +55,10 @@ static char	*grow_row(char *row, int len, int cols)
  *
  * Padding here makes "the grid is rectangular" a postcondition of
  * parsing, so every consumer downstream can index with nothing but a
- * rows/cols bounds check. The filler is a space, which is_solid
- * already treats as blocking.
+ * rows/cols bounds check. The filler is a space, which is neither
+ * wall nor floor: no ray can reach it (see is_solid) and the minimap
+ * leaves it unpainted, so the drawing matches the shape written in
+ * the .cub.
  *
  * Runs after validation, so has_only_valid_chars, has_closed_walls
  * and find_player all still see the file exactly as it was written.

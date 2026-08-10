@@ -73,19 +73,25 @@ int	handle_error(t_error error)
 }
 
 /**
- * @brief Reports whether a map cell blocks movement and rays.
+ * @brief Reports whether a map cell is a wall.
  *
- * Anything that is not open floor blocks. Spaces are legal map
- * characters and appear inside the map body (see subject_map.cub),
- * plus pad_grid introduces them on short rows, so testing for '1'
- * alone would let rays leak out through the void.
+ * Only '1' blocks. A space is not a wall: it is the void outside the
+ * map body, and treating it as solid was what painted the void as
+ * wall on the minimap.
  *
- * Player spawn characters never reach here: find_player rewrites
+ * Nothing is lost by not blocking on a space, because no ray can
+ * reach one. The DDA advances a single axis per step, so every cell
+ * it enters is an orthogonal neighbour of the previous one, and
+ * has_closed_walls guarantees each walkable cell has four in-bounds,
+ * non-space orthogonal neighbours. A ray leaving floor therefore only
+ * ever enters floor or wall, and stops at the first wall.
+ *
+ * Player spawn characters never reach here: take_row_spawns rewrites
  * them to '0' during parsing.
  *
  * @param c The grid character to test.
  *
- * @return true if the cell is solid, false if it is walkable floor.
+ * @return true if the cell is a wall, false for floor or void.
  */
 bool	is_solid(char c)
 {
