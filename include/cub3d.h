@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   cub3d.h                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: fpedroso <fpedroso@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: maria-ol <maria-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/21 00:00:00 by mona              #+#    #+#             */
-/*   Updated: 2026/08/09 13:54:41 by fpedroso         ###   ########.fr       */
+/*   Updated: 2026/08/10 15:59:41 by maria-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -317,6 +317,7 @@ int			take_row_spawns(char *row, t_player *player, int y);
 int			pad_grid(t_map *map);
 int			dispatch_tex(const char *line, char **dest);
 int			dispatch_color(const char *line, int dest[3]);
+int			has_only_valid_chars(char **map);
 
 /* ========================================================================== */
 /*                                RENDERING                                   */
